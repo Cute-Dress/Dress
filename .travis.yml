@@ -15,7 +15,7 @@ deploy:
   bucket: satori
   skip_cleanup: true
   local-dir: dist/dress
-  endpoint: https://minio.mycard.moe:9000/satori
+  endpoint: https://minio.moecube.com/satori
   edge:
     branch: ha-s3-endpoint
   on:
