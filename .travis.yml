@@ -4,7 +4,7 @@ cache:
   directories:
     - '$HOME/.npm'
 before_install:
-  - if [ "$TRAVIS_BRANCH" = "master" ]; then git checkout web; fi
+  - if [ "$TRAVIS_BRANCH" = "master" ]; then git remote set-branches --add origin web; git fetch origin web; git checkout web; fi
 script: npm run build
 deploy:
   provider: s3
