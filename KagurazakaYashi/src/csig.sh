@@ -1,0 +1,1 @@
+for file in *.webp; do echo $file $file.sig; gpg -u 1F017CCB7C3BFE6CEA4F5D5D3127DF05A772B61D -o $file.sig -ab $file; done

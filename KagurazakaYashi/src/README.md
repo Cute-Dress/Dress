@@ -1,7 +1,3 @@
-| 上一张 | 0 / 32 | [下一张](https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/bin/20150316SAM0165.webp.md) | 回封面 |
-| ------: | :------: | :------ | :------: |
-
-![封面](https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/src/title.webp?raw=true)
 
 # KagurazakaYashi / Masayuki
 
