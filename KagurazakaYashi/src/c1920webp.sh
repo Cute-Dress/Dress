@@ -1,0 +1,1 @@
+for file in *.jpg; do echo $file ${file%%.*}.webp; convert -resize 1920x1920 $file ${file%%.*}.webp; done

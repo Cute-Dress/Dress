@@ -16,7 +16,5 @@ deploy:
   skip_cleanup: true
   local-dir: dist/dress
   endpoint: https://minio.moecube.com/satori
-  edge:
-    branch: ha-s3-endpoint
   on:
     all_branches: true
