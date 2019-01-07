@@ -9,6 +9,9 @@ script:
   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash ./deploy/getGHPage.sh; fi'
   - 'npm run build'
   - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash ./deploy/pushGHPage.sh; fi'
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash ./deploy/getGHPage_drsrel.sh; fi'
+  - 'npm run build'
+  - 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then bash ./deploy/pushGHPage.sh; fi'
 # deploy:
 #   provider: s3
 #   access_key_id: ztDf0fCxr0eCgSIi
