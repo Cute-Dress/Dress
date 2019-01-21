@@ -8,7 +8,7 @@
 
 This simple repository requires no contribution of code from you so that you could participate in it without any coding skills to learn the whole process of cloning a repository, creating a branch, pushing and pulling changes, and making a pull request, thus mastering how to use Git/GitHub.
 
-**However, of course, you have to prepare a crossing-dress photo of yours first.**
+**However, of course, you have to prepare a cross-dressing photo of yours first.**
 
 - [https://drsrel.github.io/](https://drsrel.github.io/)
 
