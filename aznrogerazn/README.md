@@ -26,6 +26,6 @@ Contact information:
 
 More:
 
-Cosplaying/crossplaying since 2014. Lead of [Project 2062] (https://facebook.com/project2062), a *Girls' Frontline* cosplay group. Majors in *Foreign Languages & Literature*. Send me a DM on Twitter if you have any questions!
+Cosplaying/crossplaying since 2014. Lead of [Project 2062](https://facebook.com/project2062), a *Girls' Frontline* cosplay group. Majors in *Foreign Languages & Literature*. Send me a DM on Twitter if you have any questions!
 
 請多指教！
