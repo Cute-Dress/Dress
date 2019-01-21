@@ -1,7 +1,7 @@
-| 上一张 | 0 / 42 | [下一张](https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/bin/DSC00258E.jpg.md) | 回封面 |
+| [上一张](https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/bin/Yashi20181127DSC4171.jpg.md) | 41 / 42 | [下一张](https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/bin/DSC00258E.jpg.md) | [回封面](https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/README.md) |
 | ------: | :------: | :------ | :------: |
 
-![封面](https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/src/title.jpg?raw=true)
+![YashiIMG1740.jpg](https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/YashiIMG1740.jpg?raw=true)
 
 # KagurazakaYashi / Masayuki
 
