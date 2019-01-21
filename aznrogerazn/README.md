@@ -21,8 +21,8 @@ Fandom: *Girls' Frontline, Blade Runner, Ghost in the Shell, Cowboy Bebop, Madok
 Contact information:
 
 - [twitter.com/aznrogerazn](https://twitter.com/aznrogerazn)
-- [instagram.com/aznrogerazn] (https://instagram.com/aznrogerazn)
-- [facebook.com/aznrogerazn] (https://facebook.com/aznrogerazn)
+- [instagram.com/aznrogerazn](https://instagram.com/aznrogerazn)
+- [facebook.com/aznrogerazn](https://facebook.com/aznrogerazn)
 
 More:
 
