@@ -5,7 +5,7 @@
 require 'pathname'
 FILETYPE = ".jpg"
 GITHUBURL_D = "https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/README.md"
-GITHUBURL_MD = "https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/bin/"
+GITHUBURL_MD = "https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/md/"
 GITHUBURL_IMG = "https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/"
 MDTABLEFORMAT = "| ------: | :------: | :------ | :------: |"
 READMETEMPLATE = "src/README.md"
