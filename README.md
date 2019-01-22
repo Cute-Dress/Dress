@@ -20,4 +20,4 @@ This simple repository requires no contribution of code, so that you can partici
 
 
 ### Contributors
-![contributors.svg](https://opencollective.com/Dress/contributors.svg?width=890&button=false)
+[![contributors](https://opencollective.com/Dress/contributors.svg?width=890&button=false)](https://github.com/komeiji-satori/Dress/graphs/contributors)
