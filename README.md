@@ -18,6 +18,14 @@ This simple repository requires no contribution of code, so that you can partici
 
 - [https://wearadress.org/](https://wearadress.org/)
 
+### 隐私提示
+
+### Privacy tips
+
+请留意意外的个人信息泄漏，push照片前，请仔细检查照片的EXIF信息是否得到妥善处理（如坐标信息）。
+
+Please pay attention to prevent the accidental leakage of personal information. Please check carefully whether the EXIF information is properly handled (such as GPS tags) before you push the photo(s).
+
 
 ### Contributors
 [![contributors](https://opencollective.com/Dress/contributors.svg?width=890&button=false)](https://github.com/komeiji-satori/Dress/graphs/contributors)
