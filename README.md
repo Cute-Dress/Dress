@@ -12,6 +12,7 @@ This simple repository requires no contribution of code, so that you can partici
 
 **Of course, you need to prepare a cross-dressing photo of yours first.**
 
+### Online Demo
 - [https://drsrel.github.io/](https://drsrel.github.io/)
 
 - [http://satori.mycard.moe/](http://satori.mycard.moe/)
@@ -21,3 +22,12 @@ This simple repository requires no contribution of code, so that you can partici
 
 ### Contributors
 [![contributors](https://opencollective.com/Dress/contributors.svg?width=890&button=false)](https://github.com/komeiji-satori/Dress/graphs/contributors)
+
+### License
+[![License](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/) 
+本项目采用知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议进行许可。 
+This repository is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+
+### Contributing
+请仔细阅读[CONTRIBUTING.md](https://github.com/komeiji-satori/Dress/blob/master/CONTRIBUTING.md) 
+Please read [CONTRIBUTING.md](https://github.com/komeiji-satori/Dress/blob/master/CONTRIBUTING.md) carefully.
