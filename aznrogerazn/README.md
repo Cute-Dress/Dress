@@ -1,31 +1,33 @@
+![profile_image](https://raw.githubusercontent.com/komeiji-satori/Dress/master/aznrogerazn/ump45-565294.jpg)
+
 ## aznrogerazn
 
-***Engineer in Taipei City***
+***Cloud Engineer in Taipei***
 
 ***Hobbyist cosplayer***
 
-Name (EN): Roger
+名: Roger
 
-Nickname/CN: Roger or Yūko
+暱稱/CN: Roger or Yūko
 
-Occupation: Full-stack Engineer
+職業: Full-stack Engineer
 
-Tech stack: Node.js, Vue, React, Egg.js, Koa, S(A/C)SS, Cordova, Go, UI Design
+使用技術: Node.js, Vue, React, Egg.js, Koa, S(A/C)SS, Cordova, Go, UI Design
 
-Languages: English, Mandarin, Hokkien, Russian, Japanese
+語言: English, Mandarin, Hokkien, Russian, Japanese
 
-Hobbies: cosplay (obviously), driving/racing, cooking, baking, bartending
+興趣: cosplay (obviously), driving/racing, cooking, baking, bartending
 
-Fandom: *Girls' Frontline, Blade Runner, Ghost in the Shell, Cowboy Bebop, Madoka Magica, Doki Doki Literature Club, NieR/Automata, Hotline Miami...*
+坑: *Girls' Frontline, Blade Runner, Ghost in the Shell, Cowboy Bebop, Madoka Magica, Doki Doki Literature Club, NieR/Automata, Hotline Miami...*
 
-Contact information:
+來這找我:
 
 - [twitter.com/aznrogerazn](https://twitter.com/aznrogerazn)
 - [instagram.com/aznrogerazn](https://instagram.com/aznrogerazn)
 - [facebook.com/aznrogerazn](https://facebook.com/aznrogerazn)
 
-More:
+關於:
 
-Cosplaying/crossplaying since 2014. Lead of [Project 2062](https://facebook.com/project2062), a *Girls' Frontline* cosplay group. Majors in *Foreign Languages & Literature*. Send me a DM on Twitter if you have any questions!
+2014 年開始玩 cos，現為 [Project 2062](https://facebook.com/project2062) 一 *少女前線* cos 團團長。Twitter & FB 短信歡迎！
 
 請多指教！
