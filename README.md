@@ -2,6 +2,7 @@
 
 ### Dress - A Study and Practice project of git.
 
+[![Contributors](https://img.shields.io/github/contributors/komeiji-satori/Dress.svg)](https://github.com/komeiji-satori/Dress/graphs/contributors)
 [![Build Status](https://www.travis-ci.org/komeiji-satori/Dress.svg?branch=master)](https://www.travis-ci.org/komeiji-satori/Dress)
 [![License](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/)  
 
