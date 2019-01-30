@@ -21,6 +21,8 @@ This simple repository requires no contribution of code, so that you can partici
 
 - [https://wearadress.org/](https://wearadress.org/)
 
+- [https://www.yoooooooooo.com/gitdress/](https://www.yoooooooooo.com/gitdress/)
+
 
 ### Contributors
 [![contributors](https://opencollective.com/Dress/contributors.svg?width=890&button=false)](https://github.com/komeiji-satori/Dress/graphs/contributors)
