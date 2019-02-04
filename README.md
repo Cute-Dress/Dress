@@ -14,12 +14,24 @@ This simple repository requires no contribution of code, so that you can partici
 
 **Of course, you need to prepare a cross-dressing photo of yours first.**
 
+### 文件夹命名规则和文件标准
+ - 不接受盗图和未授权转载他人图片
+ - 请尽量使用有意义的文件夹名字
+ - 可使用你的 GitHub ID 或者其他社交平台上非中文的 ID 来命名文件夹
+ - 尽量不要在文件夹名字中出现空格
+ - 影响排序的文件夹命名 (例如 ```AAAA.Folder```, ```0.Folder```, ```111Folder```) 会被 Close Pull Request
+ - 如果需要在你的文件夹内创建描述文件,请尽量使用 [Markdown](https://en.wikipedia.org/wiki/Markdown) 语法来编写
+ - 图片请尽量压缩大小, 并 [删除 EXIF 信息](https://github.com/komeiji-satori/Dress/blob/master/CONTRIBUTING.md), 图片质量过低的 Pull Request 会被 Close
+ 
+
 ### Online Demo
 - [https://drsrel.github.io/](https://drsrel.github.io/)
 
 - [http://satori.mycard.moe/](http://satori.mycard.moe/)
 
 - [https://wearadress.org/](https://wearadress.org/)
+
+- [https://www.yoooooooooo.com/gitdress/](https://www.yoooooooooo.com/gitdress/)
 
 
 ### Contributors
