@@ -2,7 +2,7 @@
 
 > <h3 align="center">Do you say now or never Or never too late? |･ω･｀)</h3>
 
-Copyright © 2019 [伏太「LF112」](https://www.futiwolf.com) All Rights Reserved.
+Copyright © 2019 [伏太「LF112」](https://www.futiwolf.com).
 
 ## Start
  `01#2019.3.15` 从现在开始，我所展望的女装就在这里。
