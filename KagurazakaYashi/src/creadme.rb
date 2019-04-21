@@ -3,13 +3,13 @@
 # komeiji-satori <- kagurazakayashi
 # by kagurazakayashi
 require 'pathname'
-FILETYPE = ".webp"
-GITHUBURL_D = "https://github.com/komeiji-satori/Dress/tree/master/KagurazakaYashi"
-GITHUBURL_MD = "https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/bin/"
+FILETYPE = ".jpg"
+GITHUBURL_D = "https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/README.md"
+GITHUBURL_MD = "https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/md/"
 GITHUBURL_IMG = "https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/"
 MDTABLEFORMAT = "| ------: | :------: | :------ | :------: |"
 READMETEMPLATE = "src/README.md"
-RELEASEMDDIR = "bin/"
+RELEASEMDDIR = "md/"
 READMEMD = "README.md"
 newmd = Array.new
 readme = Array.new
@@ -21,7 +21,7 @@ end
 nowpath = Pathname.new(File.dirname(__FILE__)).realpath
 Dir.foreach(nowpath) do |file|
     if file !="." and file !=".."
-        if file[-5,5] == FILETYPE
+        if file[-4,4] == FILETYPE
             imgfilenames << file
         end
     end
@@ -60,7 +60,7 @@ puts nowmdfilename;
 newmdfile = File.new(nowmdfilename,"w")
 newmd << "| 上一张 | 0 / " + imgfilenameslen.to_s + " | [下一张](" + firstlink + ") | 回封面 |"
 newmd << MDTABLEFORMAT
-newmd << "\n![封面](" + GITHUBURL_IMG + "src/" + "title.webp?raw=true)"
+newmd << "\n![封面](" + GITHUBURL_IMG + "src/" + "title.jpg?raw=true)"
 newmd += readme
 for newlinestr in newmd do
     newmdfile.puts newlinestr

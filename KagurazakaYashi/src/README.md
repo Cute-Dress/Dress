@@ -10,9 +10,11 @@
 
 因为 `Google+` ，因为 `神楽坂雯麗` ，我有了现在的网名。
 
-- 由于之前照片的体积过大（甚至单张超过 20MB ），目前已对这些照片进行了压缩。
-  - 由于采用 webp 格式压缩，建议使用 Chrome 浏览器浏览和打开。
-  - 尺寸缩小为任一边最高 1920 像素。
+- 由于之前照片的体积过大（甚至单张超过 20MB ），目前已对这些照片进行了压缩。图片使用了以下处理参数：
+  - `convert -resize 1920x1920 -quality 80% *.jpg`
+  - `exiftool -gps:all= *.jpg`
+  - `gpg -u *** -o sig/*.sig -ab *`
+  - `creadme.rb`
 
 # Distribution
 
@@ -21,6 +23,8 @@
 - Google+: <https://plus.google.com/105938465531761409080>
 - Facebook: <https://www.facebook.com/580447548816252>
 - Twitter: <http://twitter.com/kagurazakayashi>
+- Mastodon: @yashi@hitorino.moe
+- MeWe: <https://mewe.com/profile/5bc5fe8aa5f4e53ee072543d>
 - Weibo: <https://weibo.com/KagurazakaYashi>
 - BiliBili: <https://space.bilibili.com/870497>
 - Gravatar: <http://cn.gravatar.com/cyshope>
