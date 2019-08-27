@@ -13,7 +13,7 @@ This simple repository requires no contribution of code, so that you can partici
 
 **当然，你还要事先准备至少一张你的女装照。**
 
-**Of course, you need to prepare a photo of you in women's clothing first.**
+**Of course, you need to prepare a photo of you dressed in women's clothing first.**
 
 ### 文件夹命名规则和文件标准
 ### File and Folder Naming Rules and Filetype Standards
