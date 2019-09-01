@@ -7,4 +7,4 @@
 希望能认识更多可爱的男孩子，还有可爱的女孩子！~
 
 ## Contact
-Telegram: @papadave
+Telegram: [@papadave](https://t.me/papadave)
