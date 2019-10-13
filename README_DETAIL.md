@@ -22,4 +22,4 @@ how to ctrl the size of repo, maintenance the repo, and so on.
 
 How to join you?
 ---------------
-Please read README.md.
+Please read [README.md.](README.md)
