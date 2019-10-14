@@ -1,9 +1,8 @@
 WHY???
 --------------
-In short: We're encouraging more people to learn and understand the ideology of GitHub. 
+In short: We're encouraging more people to learn and understand the ideology of GitHub without coding. 
 
-There are quasi-programmers and non-programmers who need to participate in collaborative projects.
-Our goal is ***letting them practice using GitHub without contribution of code*** so it's excatly suitable to practice in this project.
+There are quasi-programmers and non-programmers who need to participate in collaborative projects. So it's excatly suitable to practice in this project because no coding skills are required here.
 
 Will this project take up a lot of GitHub resources?
 ---------------
