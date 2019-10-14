@@ -1,25 +1,30 @@
-WHY????
+WHY???
 --------------
-Simply put: We want to encourage more people to learn and understand, to know the ideology of github.  
-Of course, them are quasi-programmer and non-programmer but who need multi-person collaborative production project.
-So that caused the pointer of this project: ***Let them practice using github without contribution of code***.
+In short: We're encouraging more people to learn and understand the ideology of GitHub. 
+
+There are quasi-programmers and non-programmers who need to participate in collaborative projects.
+Our goal is ***letting them practice using GitHub without contribution of code*** so it's excatly suitable to practice in this project.
 
 Will this project take up a lot of GitHub resources?
 ---------------
-No.  
-Github has its limit: the size of repo cannot exceed 1024MB.
-The contributor are asked to compress pictures. If the picture is not up to standard,
-or the size of the picture is larger than 1MB, the pull request will be closed. This is also a github-workflow training for them.
-In future, We might regularly delete past documents (and their record) to ensure the size of the repo.
+No.
+
+There are limitations on GitHub: The max size of a repo is 1024MB.
+
+In our workflow, the contributors are asked to compress their photos. If any photo is larger than 1MB, or photos doesn't meet our standard, the pull request will be closed. It's also considered to be a training course of GitHub workflow for them.
+
+In the future, we might clean orphaned objects regularly to keep the availability of the repo.
 
 Is this project really helpful?
 ---------------
-I think, yes.  
-This project can (and already) aroused a lot of interest to use github and teached a lot of people 
-"the ideology and the workflow of github and how to simply use github" in an easy-to-understand way.  
-This project also develop their team cooperation ability: join the discussion and solve problem such as 
-how to ctrl the size of repo, maintenance the repo, and so on.
+Yes, we think.
 
-How to join you?
+This project has already raised attention about using github and teached lots of people 
+"the ideology and the workflow of GitHub" and "how to use GitHub simply" in an easy-to-understand way.
+
+This project has also developed users' team cooperation ability: Join the discussion and solve problems such as 
+forking, merging branches, controlling the size of repos, maintaining repos, and so on.
+
+How to join us?
 ---------------
-Please read [README.md.](README.md)
+Please refer to [README.md](README.md).
