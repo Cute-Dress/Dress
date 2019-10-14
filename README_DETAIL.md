@@ -11,7 +11,7 @@ No.
 
 There are limitations on GitHub: The max size of a repo is 1024MB.
 
-In our workflow, the contributors are asked to compress their photos. If any photo is larger than 1MB, or photos doesn't meet our standard, the pull request will be closed. It's also considered to be a training course of GitHub workflow for them.
+Contributors are required to compress their photos before making pull requests. Photos which are larger than 1MB per file or don't meet our standard will be rejected. It's also considered to be a training course of GitHub workflow for them.
 
 In the future, we might clean orphaned objects regularly to keep the availability of the repo.
 
@@ -19,7 +19,7 @@ Is this project really helpful?
 ---------------
 Yes, we think.
 
-This project has already raised attention about using github and teached lots of people 
+This project has already gained attention about GitHub and teached lots of people 
 "the ideology and the workflow of GitHub" and "how to use GitHub simply" in an easy-to-understand way.
 
 This project has also developed users' team cooperation ability: Join the discussion and solve problems such as 
