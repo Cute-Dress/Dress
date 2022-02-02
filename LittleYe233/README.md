@@ -56,4 +56,6 @@
 
 暂未定。
 
-<!-- ## 相关链接 -->
+## 附录
+
+参见本仓库的 [APPENDIX.md](/LittleYe233/APPENDIX.md) 。
