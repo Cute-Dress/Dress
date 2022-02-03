@@ -1,6 +1,4 @@
-# LittleYe233/Dress 附录
-
-## 使用 Python 去除图片的 EXIF 信息
+# LittleYe233/Dress 附录 - 使用 Python 去除图片的 EXIF 信息
 
 可以使用 `pillow` 模块。
 
