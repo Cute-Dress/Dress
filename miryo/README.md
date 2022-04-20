@@ -11,7 +11,10 @@
  + 开黑啦
  + bilibili
  + acfun  
+
 ## About my ID
 其中，我使用过许多昵称，例如 `vcup` `miryo`  
 id 被抢先使用时还会使用 `vcupmoe` `vcupdesu` 等  
 在 2019 年左右还在 Minecraft 服务器中使用过 `9sanc` `9sans`
+
+现在主要倾向使用 `miryo`  
