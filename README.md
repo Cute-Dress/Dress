@@ -31,8 +31,6 @@ This simple repository requires no contribution of code, so that you can partici
 
 - [http://satori.mycard.moe/](http://satori.mycard.moe/)
 
-- [https://wearadress.org/](https://wearadress.org/)
-
 - [https://www.yoooooooooo.com/gitdress/](https://www.yoooooooooo.com/gitdress/)
 
 
