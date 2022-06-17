@@ -8,8 +8,6 @@ Will this project take up a lot of GitHub resources?
 ---------------
 No.
 
-There are limitations on GitHub: The max size of a repo is 1024MB.
-
 Contributors are required to compress their photos before making pull requests. Photos which are larger than 1MB per file or don't meet our standard will be rejected. It's also considered to be a training course of GitHub workflow for them.
 
 In the future, we might clean orphaned objects regularly to keep the availability of the repo.
