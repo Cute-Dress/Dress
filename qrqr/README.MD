@@ -11,10 +11,10 @@ INFP-T
 正在学习说话
 
 <details>
-<summary>webp</summary>
+<summary>jpg</summary>
 
-![](IMG_20221121_144653.webp)
+![](IMG_20221121_144653.jpg)
 
-![](IMG_20221211_115006.webp)
+![](IMG_20221211_115006.jpg)
 
-![](IMG_20221212_003319.webp)
+![](IMG_20221212_003319.jpg)
