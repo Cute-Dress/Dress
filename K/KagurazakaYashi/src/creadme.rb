@@ -1,12 +1,12 @@
 #!/usr/bin/ruby
 # -*- coding: UTF-8 -*-
-# komeiji-satori <- kagurazakayashi
+# kaguramiyabiw <- kagurazakayashi
 # by kagurazakayashi
 require 'pathname'
 FILETYPE = ".jpg"
-GITHUBURL_D = "https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/README.md"
-GITHUBURL_MD = "https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/md/"
-GITHUBURL_IMG = "https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/"
+GITHUBURL_D = "https://github.com/kaguramiyabiw/Dress/blob/master/KagurazakaYashi/README.md"
+GITHUBURL_MD = "https://github.com/kaguramiyabiw/Dress/blob/master/KagurazakaYashi/md/"
+GITHUBURL_IMG = "https://github.com/kaguramiyabiw/Dress/blob/master/KagurazakaYashi/"
 MDTABLEFORMAT = "| ------: | :------: | :------ | :------: |"
 READMETEMPLATE = "src/README.md"
 RELEASEMDDIR = "md/"

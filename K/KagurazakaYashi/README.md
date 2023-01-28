@@ -1,18 +1,13 @@
-| 上一张 | 0 / 42 | [下一张](https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/md/DSC00258E.jpg.md) | 回封面 |
+| 上一张 | 0 / 42 | [下一张](https://github.com/kaguramiyabiw/Dress/blob/master/KagurazakaYashi/md/DSC00258E.jpg.md) | 回封面 |
 | ------: | :------: | :------ | :------: |
 
-![封面](https://github.com/komeiji-satori/Dress/blob/master/KagurazakaYashi/src/title.jpg?raw=true)
+![封面](https://github.com/kaguramiyabiw/Dress/blob/master/KagurazakaYashi/src/title.jpg?raw=true)
 
 # KagurazakaYashi / Masayuki
 
-```
-かぐらざか まさゆき
-  神楽坂    雅詩
-```
-
 你好，我是神楽坂雅詩。
 
-因为 `Google+` ，因为 `神楽坂雯麗` ，我有了现在的网名。
+因为 `Google+` ，因为 [神楽坂雯麗](https://github.com/kaguramiyabiw/Dress/tree/master/KagurazakaWenli) ，我有了现在的网名。
 
 - 由于之前照片的体积过大（甚至单张超过 20MB ），目前已对这些照片进行了压缩。图片使用了以下处理参数：
   - `convert -resize 1920x1920 -quality 80% *.jpg`
@@ -23,16 +18,13 @@
 # Distribution
 
 - Github: <https://github.com/kagurazakayashi>
-- Web: <https://yashi.yoooooooooo.com/>
 - Google+: <https://plus.google.com/105938465531761409080>
 - Facebook: <https://www.facebook.com/580447548816252>
 - Twitter: <http://twitter.com/kagurazakayashi>
 - Mastodon: @yashi@hitorino.moe
-- MeWe: <https://mewe.com/profile/5bc5fe8aa5f4e53ee072543d>
 - Weibo: <https://weibo.com/KagurazakaYashi>
 - BiliBili: <https://space.bilibili.com/870497>
 - Gravatar: <http://cn.gravatar.com/cyshope>
-- 高解析度相册: <https://plus.google.com/collection/MXOzu>
 
 # Compiling
 
@@ -40,14 +32,12 @@
 
 # Installation
 
-[姬家伪娘绝对领域](https://plus.google.com/communities/101596765407994278847) (G+偽娘中文圈) 的創建者，但本人沒有偽娘天賦，也就算個CD，沒有什麼優質的照片啦。如果你喜歡，歡迎加入此圈子~
+[姬家伪娘绝对领域](https://plus.google.com/communities/101596765407994278847) (G+偽娘中文圈) 的創建者。如果你喜歡，歡迎加入此圈子~
 
 # Documentation
 
 ```
 (･∀･) 希望認識更多可愛的男孩子
-(･∀･) もっと可愛い男の子を知りたいと思った
-(･∀･) I wanna know more cute crossdress boy
 ```
 
 # Copying
@@ -67,4 +57,4 @@
 
 # Contributing
 
-[神楽坂的故事](https://www.yoooooooooo.com/yashi/4921)
+[神楽坂的故事](https://mp.weixin.qq.com/s/10y7U7cHyJNFwOmd1cla8A)
