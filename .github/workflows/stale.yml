@@ -21,7 +21,7 @@ jobs:
     - uses: actions/stale@v5
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        stale-issue-message: '这个 issue 已许久未活跃，因此关闭'
-        stale-pr-message: '这个 PR 已许久未活跃，因此关闭'
+        stale-issue-message: '这个 issue 已许久未活跃，因此即将关闭'
+        stale-pr-message: '这个 PR 已许久未活跃，因此即将关闭'
         stale-issue-label: 'no-issue-activity'
         stale-pr-label: 'no-pr-activity'
