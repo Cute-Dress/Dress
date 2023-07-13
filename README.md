@@ -32,7 +32,17 @@ This simple repository requires no contribution of code, so that you can partici
 - If you need to add a descriptive file in your folder, please compose it using [Markdown](https://en.wikipedia.org/wiki/Markdown).
 - 图片请尽量压缩大小, 并 [删除 EXIF 信息](CONTRIBUTING.md), 图片质量过低的 Pull Request 会被 Close
 - Please attempt to compress your images and [delete EXIF data](CONTRIBUTING.md), pull requests with excessively large image files will be closed.
- 
+
+## Star 历史 / Star History
+
+<a href="https://star-history.com/#Cute-Dress/Dress&Timeline">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Cute-Dress/Dress&type=Timeline&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Cute-Dress/Dress&type=Timeline" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Cute-Dress/Dress&type=Timeline" />
+  </picture>
+</a>
+
 ### 在线预览 / Online Demo
 
 - <https://picw.4everland.app/images?name=Cute-Dress&repository=Dress&directory=/> by [@Flysky12138](https://github.com/Flysky12138)
