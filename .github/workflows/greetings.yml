@@ -13,4 +13,4 @@ jobs:
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
         #issue-message: "Message that will be displayed on users' first issue"
-        pr-message: "你好 @${{ github.actor }}，感谢提交PR！\n我们会尽早审核回应~😊"
+        pr-message: "你好 @${{ github.actor }}，感谢提交PR！\nHi @${{ github.actor }}, thanks for opening the Pull Request!\n我们会尽早审核回应~😊\nWe will respond to it as soon as possible~😊"
