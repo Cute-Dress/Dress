@@ -1,1 +1,4 @@
-# 深雪 | miyuki_4737
+# 深雪 | miyuki_3747
+
+我是深雪！
+Discord: miyuki_3747
