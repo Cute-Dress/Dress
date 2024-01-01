@@ -25,7 +25,10 @@ jobs:
           require: write
 
       - name: Fast forwarding
-        if: steps.check-perm.outputs.require-result
+        if: steps.check-perm.outputs.require-result == 'true'
+        # As GitHub actions use actor's permission, it's not possible
+        # for anyone without write permission to perform a merge.
+        # This check only is merely for skipping it silently.
         uses: sequoia-pgp/fast-forward@v1
         with:
           merge: true
