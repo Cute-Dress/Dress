@@ -8,7 +8,7 @@
 ![GitHub repo size in bytes](https://img.shields.io/github/repo-size/Cute-Dress/Dress.svg)
 [![License](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/)  
 
-项目很简单且并不要求你贡献代码，没有编程技能都可以参加。你可以从这里学习从克隆项目，创建分支，提交和同步修改，到合并分支请求的整套流程，一次即可熟悉 Git/GitHub 的使用。 
+项目很简单且并不要求你贡献代码，没有编程技能都可以参加。你可以从这里学习从克隆项目，创建分支，提交和同步修改，到合并分支请求的整套流程，一次即可熟悉 Git/GitHub 的使用。
 
 This simple repository requires no contribution of code, so that you can participate in it without having any coding skills. This project helps you to learn the whole process of cloning a repository, creating a branch, pushing and pulling commits, and making a pull request, thus you can have a good knowledge of Git/GitHub's usage.
 
@@ -27,7 +27,7 @@ This simple repository requires no contribution of code, so that you can partici
 - 尽量不要在文件夹名字中出现空格
 - Please try to avoid spaces in folder names.
 - 影响排序的文件夹命名 (例如 ```AAAA.Folder```, ```0.Folder```, ```111Folder```) 会被 Close Pull Request
-- Pull requests with folder names that attempt to influence ordering (ex: ```AAAA.Folder```, ```0.Folder```, ```111Folder```）will be closed. 
+- Pull requests with folder names that attempt to influence ordering (ex: ```AAAA.Folder```, ```0.Folder```, ```111Folder```)will be closed.
 - 如果需要在你的文件夹内创建描述文件,请尽量使用 [Markdown](https://en.wikipedia.org/wiki/Markdown) 语法来编写
 - If you need to add a descriptive file in your folder, please compose it using [Markdown](https://en.wikipedia.org/wiki/Markdown).
 - 图片请尽量压缩大小, 并 [删除 EXIF 信息](CONTRIBUTING.md), 图片质量过低的 Pull Request 会被 Close
@@ -48,7 +48,7 @@ This simple repository requires no contribution of code, so that you can partici
 - <https://picw.4everland.app/images?name=Cute-Dress&repository=Dress&directory=/> by [@Flysky12138](https://github.com/Flysky12138)
 
 <details><summary>旧 Dress 项目</summary>
- 
+
 - [https://drsrel.github.io/](https://drsrel.github.io/)
 
 - [http://satori.mycard.moe/](http://satori.mycard.moe/)
