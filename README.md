@@ -19,19 +19,21 @@ This simple repository requires no contribution of code, so that you can partici
 ### 文件夹命名规则和文件标准 / File and Folder Naming Rules and Filetype Standards
 
 - 不接受盗图和未授权转载他人图片
-- Stolen pictures and unauthorized photos of other people are not accepted.
+- Stolen pictures and unauthorized photos of other people are not accepted
 - 请尽量使用有意义的文件夹名字
-- Please attempt to use meaningful folder names.
+- Please attempt to use meaningful folder names
 - 可使用你的 GitHub ID 或者其他社交平台上非中文的 ID 来命名文件夹
-- Use your GitHub ID or roman character social media IDs as folder names.
+- Use your GitHub ID or roman character social media IDs as folder names
+- 文件夹按照首字母归类
+- Folders are organized alphabetically
 - 尽量不要在文件夹名字中出现空格
-- Please try to avoid spaces in folder names.
+- Please try to avoid spaces in folder names
 - 影响排序的文件夹命名 (例如 ```AAAA.Folder```, ```0.Folder```, ```111Folder```) 会被 Close Pull Request
-- Pull requests with folder names that attempt to influence ordering (ex: ```AAAA.Folder```, ```0.Folder```, ```111Folder```)will be closed.
+- Pull requests with folder names that attempt to influence ordering (ex: ```AAAA.Folder```, ```0.Folder```, ```111Folder```)will be closed
 - 如果需要在你的文件夹内创建描述文件,请尽量使用 [Markdown](https://en.wikipedia.org/wiki/Markdown) 语法来编写
 - If you need to add a descriptive file in your folder, please compose it using [Markdown](https://en.wikipedia.org/wiki/Markdown).
 - 图片请尽量压缩大小, 并 [删除 EXIF 信息](CONTRIBUTING.md), 图片质量过低的 Pull Request 会被 Close
-- Please attempt to compress your images and [delete EXIF data](CONTRIBUTING.md), pull requests with excessively large image files will be closed.
+- Please attempt to compress your images and [delete EXIF data](CONTRIBUTING.md), pull requests with excessively large image files will be closed
 
 ## Star 历史 / Star History
 
