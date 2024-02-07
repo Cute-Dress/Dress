@@ -2,11 +2,15 @@ name: fast-forward for PR
 # GitHub doesn't support fast-forward merge of PR, 
 # which causes GPG signatures overriden by GitHub's key.
 # This workflow allows maintainers to do a fast-forward merge
-# by replying `/fast-forward` to the PR.
+# by replying anything containing `/fast-forward` to the PR.
 #
 # Contributors must first rebase onto the latest commit before PR to make fast-forward possible.
 on:
+  # issue / PR comment
   issue_comment:
+    types: [created, edited]
+  # PR comment in review
+  pull_request_review_comment:
     types: [created, edited]
 jobs:
   fast-forward:
