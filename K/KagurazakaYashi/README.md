@@ -1,7 +1,7 @@
-| 上一张 | 0 / 42 | [下一张](https://github.com/kaguramiyabiw/Dress/blob/master/KagurazakaYashi/md/DSC00258E.jpg.md) | 回封面 |
+| 上一张 | 0 / 42 | [下一张](md/DSC00258E.jpg.md) | 回封面 |
 | ------: | :------: | :------ | :------: |
 
-![封面](https://github.com/kaguramiyabiw/Dress/blob/master/KagurazakaYashi/src/title.jpg?raw=true)
+![封面](src/title.jpg?raw=true)
 
 # KagurazakaYashi / Masayuki
 

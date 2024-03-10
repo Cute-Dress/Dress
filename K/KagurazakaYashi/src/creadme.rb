@@ -4,9 +4,9 @@
 # by kagurazakayashi
 require 'pathname'
 FILETYPE = ".jpg"
-GITHUBURL_D = "https://github.com/kaguramiyabiw/Dress/blob/master/KagurazakaYashi/README.md"
-GITHUBURL_MD = "https://github.com/kaguramiyabiw/Dress/blob/master/KagurazakaYashi/md/"
-GITHUBURL_IMG = "https://github.com/kaguramiyabiw/Dress/blob/master/KagurazakaYashi/"
+GITHUBURL_D = "README.md"
+GITHUBURL_MD = "md/"
+GITHUBURL_IMG = ""
 MDTABLEFORMAT = "| ------: | :------: | :------ | :------: |"
 READMETEMPLATE = "src/README.md"
 RELEASEMDDIR = "md/"
