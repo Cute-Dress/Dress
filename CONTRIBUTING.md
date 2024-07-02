@@ -1,4 +1,4 @@
-## 照片准则 Photo Accept Baseline
+## 照片准则 Photo Submission Criteria
 
 - 不接受盗图和未授权转载他人图片
 - Stolen pictures and unauthorized photos of other people are not accepted.
