@@ -8,11 +8,9 @@ depends=()
 optdepends=('git')
 license=("CC-0")
 source=("1-1.webp"
-        "1-2.webp"
-        "1-3.webp")
+        "1-2.webp")
 sha512sums=("9bb5a6af5ed93c981e06d3b49109cc616b3ea2674fd02bb563c8e01cbf29424e3a279b0a613ce3bcf001166834e1f65fa348a3b435bb886ccc045f302f0fa04b"
-            "c9f8b69c6c4c976a367eb0213a70136d6f066a010557329c3f9a71144e69b7dc014e515614f84059c9a56b806951a6c9871780822c4ecfc3e6c1ad6487a25021"
-            "9e3481e43e100aa4c16d5f26f74094d639e7b19dd18441bc559e004ef214be1fd5f10b1fce832947f2f328cdc7310dd03a19cd30670d5f00ae20f568f332b0df")
+            "33ce8bfd6f87cbdf821f37c631d85ecc72e812768b27621cdfd4c2d192fa1bf8809b0771e6cd220e22d03887600c75d4e503d6b5294c0f68f15ab726f6519471")
 
 package() {
     mkdir -p "${pkgdir}/usr/lib/dress-ly"

@@ -1,4 +1,4 @@
-<!--vite ^4.2.0, vuetify ^3.0.0, see https://github.com/Young-Lord/online-clipboard/blob/v0.0.4/frontend/package.json-->
+<!-- vite ^4.2.0, vuetify ^3.0.0, see https://github.com/Young-Lord/online-clipboard/blob/v0.0.4/frontend/package.json -->
 <template>
     <v-app>
         <v-main>
