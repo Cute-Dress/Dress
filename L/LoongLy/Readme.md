@@ -6,6 +6,4 @@
 
 非常感谢我的女朋友给我化妆！
 
-
-
 ![shenzhen gameshow 2024](./Shenzhen_Gameshow_2024.jpg)
