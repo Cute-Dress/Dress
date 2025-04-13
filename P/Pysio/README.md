@@ -1,8 +1,0 @@
-## 关于
-
-一只懒懒的熊猫qwq
-
-## GPG验证
-邮箱 <qq593277393@outlook.com>
-
-指纹 CE62A54B6B73660026125DCBE1ACA598FE7CFA8A
