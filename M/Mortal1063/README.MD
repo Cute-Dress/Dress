@@ -1,4 +1,4 @@
-# # <img src="https://avatars.githubusercontent.com/u/67450665" width="40" /> Mortal1063
+# # <img src="https://avatars.githubusercontent.com/u/67450665" width="35" /> Mortal1063
 
 **大家好，我是Mortal**
 
