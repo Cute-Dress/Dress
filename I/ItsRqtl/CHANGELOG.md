@@ -1,5 +1,8 @@
 # 更新記錄
 
+> 快速連結：[ [回到 README](./README.md) ]
+
+
 這個檔案記錄了本資料夾的更新記錄。  
 <details>
 <summary>至於為什麽要這樣做...</summary>
