@@ -1,0 +1,79 @@
+name: Check File Size
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  check-size:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check file sizes
+        id: check_files
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          HEAD_SHA="${{ github.sha }}"
+          MAX_SIZE=$((1024 * 1024)) # 1 MB
+
+          echo "Comparing changes between $BASE_SHA and $HEAD_SHA"
+
+          failed=0
+          files_over=()
+
+          while IFS= read -r -d '' file; do
+            if [ -f "$file" ]; then
+                size=$(wc -c < "$file")
+                if [ "$size" -gt "$MAX_SIZE" ]; then
+                  echo "Error: $file ($size bytes)"
+                  files_over+=("- $file ($size bytes)")
+                  failed=1
+                fi
+            fi
+          done < <(
+            git diff --name-only -z --diff-filter=AMCR "$BASE_SHA" "$HEAD_SHA"
+          )
+
+          if [ "$failed" -eq 1 ]; then
+            {
+              echo "file_list<<EOF"
+              printf "%s\n" "${files_over[@]}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+            exit 1
+          else
+            echo "All changed files are under 1 MB."
+          fi
+
+      - name: Comment on PR and add label if size check failed
+        if: steps.check_files.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fileList = `${{ steps.check_files.outputs.file_list }}`;
+            if (fileList) {
+              const body = `
+            我们注意到以下文件的大小超过了 1MB，请在压缩后再次提交 Pull Request：
+            We have noted that the following files exceed 1MB in size. Please resubmit your pull request after compressing them:
+
+            ${fileList}
+            `.trim();
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+
+              throw new Error('File size check failed');
+            }
