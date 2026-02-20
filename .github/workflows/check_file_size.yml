@@ -4,11 +4,14 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  
 jobs:
   check-size:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -76,4 +79,5 @@ jobs:
               });
 
               throw new Error('File size check failed');
+
             }
