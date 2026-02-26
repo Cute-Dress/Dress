@@ -1,7 +1,7 @@
 name: Check File Size
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 permissions:
@@ -13,71 +13,59 @@ jobs:
   check-size:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - name: Check file sizes
-        id: check_files
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-
-          BASE_SHA="${{ github.event.pull_request.base.sha }}"
-          HEAD_SHA="${{ github.sha }}"
-          MAX_SIZE=$((1024 * 1024)) # 1 MB
-
-          echo "Comparing changes between $BASE_SHA and $HEAD_SHA"
-
-          failed=0
-          files_over=()
-
-          while IFS= read -r -d '' file; do
-            if [ -f "$file" ]; then
-                size=$(wc -c < "$file")
-                if [ "$size" -gt "$MAX_SIZE" ]; then
-                  echo "Error: $file ($size bytes)"
-                  files_over+=("- $file ($size bytes)")
-                  failed=1
-                fi
-            fi
-          done < <(
-            git diff --name-only -z --diff-filter=AMCR "$BASE_SHA" "$HEAD_SHA"
-          )
-
-          if [ "$failed" -eq 1 ]; then
-            {
-              echo "file_list<<EOF"
-              printf "%s\n" "${files_over[@]}"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-            exit 1
-          else
-            echo "All changed files are under 1 MB."
-          fi
-
-      - name: Comment on PR and add label if size check failed
-        if: steps.check_files.outcome == 'failure'
         uses: actions/github-script@v7
         with:
           script: |
-            const fileList = `${{ steps.check_files.outputs.file_list }}`;
-            if (fileList) {
-              const body = `
-            我们注意到以下文件的大小超过了 1MB，请在压缩后再次提交 Pull Request：
-            We have noted that the following files exceed 1MB in size. Please resubmit your pull request after compressing them:
+            const MAX_SIZE = 1024 * 1024; // 1 MB
+            const prNumber = context.payload.pull_request.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
 
-            ${fileList}
-            `.trim();
-              
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: body
+            let page = 1;
+            let oversized = [];
+
+            while (true) {
+              const response = await github.rest.pulls.listFiles({
+                owner,
+                repo,
+                pull_number: prNumber,
+                per_page: 100,
+                page
               });
 
-              throw new Error('File size check failed');
+              const files = response.data;
+              if (files.length === 0) break;
 
+              for (const file of files) {
+                // 只检查新增或修改文件
+                if (["added", "modified", "renamed", "copied"].includes(file.status)) {
+                  if (file.size > MAX_SIZE) {
+                    oversized.push(`- ${file.filename} (${file.size} bytes)`);
+                  }
+                }
+              }
+
+              if (files.length < 100) break;
+              page++;
+            }
+
+            if (oversized.length > 0) {
+              const body = `
+            我们注意到以下文件的大小超过了 1MB, 请在压缩后再次提交 Pull Request:
+            We have noted that the following files exceed 1MB in size. Please resubmit your pull request after compressing them:
+
+            ${oversized.join("\n")}
+              `.trim();
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body
+              });
+
+              core.setFailed("File size check failed");
+            } else {
+              core.info("All changed files are under 1 MB.");
             }
