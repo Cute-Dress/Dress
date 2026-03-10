@@ -1,0 +1,82 @@
+name: Check File Size
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  
+jobs:
+  check-size:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check file sizes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const MAX_SIZE = 1024 * 1024; // 1 MB
+            const prNumber = context.payload.pull_request.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pr = context.payload.pull_request;
+
+            let page = 1;
+            let oversized = [];
+
+            while (true) {
+              const response = await github.rest.pulls.listFiles({
+                owner,
+                repo,
+                pull_number: prNumber,
+                per_page: 100,
+                page
+              });
+
+              const files = response.data;
+              if (files.length === 0) break;
+
+              for (const file of files) {
+                // 只检查新增或修改文件
+                if (!["added","modified","renamed","copied"].includes(file.status))
+                  continue;
+
+                const content = await github.rest.repos.getContent({
+                  owner: pr.head.repo.owner.login,
+                  repo: pr.head.repo.name,
+                  path: file.filename,
+                  ref: pr.head.sha
+                });
+
+                const size = content.data.size;
+
+                if (size > MAX_SIZE) {
+                  oversized.push(`- ${file.filename} (${size} bytes)`);
+                }
+              }
+
+              if (files.length < 100) break;
+              page++;
+            }
+
+            if (oversized.length > 0) {
+              const body = `
+            我们注意到以下文件的大小超过了 1MB, 请在压缩后再次提交 Pull Request:
+            We have noted that the following files exceed 1MB in size. Please resubmit your pull request after compressing them:
+
+            ${oversized.join("\n")}
+              `.trim();
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body
+              });
+
+              core.setFailed("File size check failed");
+            } else {
+              core.info("All changed files are under 1 MB.");
+            }
