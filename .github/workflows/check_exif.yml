@@ -1,0 +1,105 @@
+name: Check Image EXIF Data
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    paths: ['**/*.jpg', '**/*.jpeg', '**/*.png', '**/*.webp', '**/*.tiff', '**/*.tif', '**/*.heic', '**/*.heif', '**/*.avif', '**/*.gif']
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: exif-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check-exif:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install exiftool
+        run: |
+          command -v exiftool && exit 0
+          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl \
+            || (sudo apt-get update && sudo apt-get install -y --no-install-recommends libimage-exiftool-perl)
+
+      - name: Check EXIF in changed images
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { execSync } = require('child_process');
+            const fs = require('fs');
+            const path = require('path');
+            const os = require('os');
+            const pr = context.payload.pull_request;
+            const { owner, repo } = context.repo;
+            const prNumber = pr.number;
+            const IMAGE_EXT = /\.(jpe?g|png|webp|tiff?|hei[cf]|avif|gif)$/i;
+
+            // 1. Collect changed image files
+            let changedImages = [], page = 1;
+            while (true) {
+              const { data: files } = await github.rest.pulls.listFiles({ owner, repo, pull_number: prNumber, per_page: 100, page });
+              if (!files.length) break;
+              for (const f of files) {
+                if (['added', 'modified', 'renamed', 'copied'].includes(f.status) && IMAGE_EXT.test(f.filename))
+                  changedImages.push(f.filename);
+              }
+              if (files.length < 100) break;
+              page++;
+            }
+            if (!changedImages.length) { core.info('No changed images.'); return; }
+            core.info(`Checking ${changedImages.length} image(s) for EXIF data.`);
+
+            // 2. Download & check each image
+            const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'exif-'));
+            const exifFiles = [], errors = [];
+
+            for (const file of changedImages) {
+              const tmpFile = path.join(tmp, file.replace(/[\\/]/g, '__'));
+              try {
+                const { data } = await github.rest.repos.getContent({
+                  owner: pr.head.repo.owner.login, repo: pr.head.repo.name,
+                  path: file, ref: pr.head.sha
+                });
+                let raw;
+                if (!Array.isArray(data) && data.content) raw = Buffer.from(data.content, 'base64');
+                else if (!Array.isArray(data) && data.download_url) {
+                  const resp = await fetch(data.download_url);
+                  if (!resp.ok) throw new Error(`Download ${resp.status}`);
+                  raw = Buffer.from(await resp.arrayBuffer());
+                } else throw new Error('Cannot fetch file content');
+
+                fs.writeFileSync(tmpFile, raw);
+                const count = parseInt(execSync(
+                  `exiftool -EXIF:all -S -q -- '${tmpFile.replace(/'/g, "'\\''")}' 2>/dev/null | wc -l`,
+                  { encoding: 'utf-8', timeout: 10000 }
+                ).trim()) || 0;
+                if (count > 0) { exifFiles.push(file); core.info(`EXIF found: ${file} (${count} tags)`); }
+              } catch (e) { core.warning(`Check failed: ${file}: ${e.message}`); errors.push(file); }
+              finally { try { fs.unlinkSync(tmpFile); } catch {} }
+            }
+            try { fs.rmdirSync(tmp); } catch {}
+
+            // 3. Report results
+            if (errors.length) {
+              core.setFailed(`EXIF check failed for: ${errors.join(', ')}. Please retry or ask a maintainer.`);
+              return;
+            }
+            if (exifFiles.length) {
+              const fileList = exifFiles.map(f => `- ${f}`).join('\n');
+              const body = [
+                '我们检测到以下文件包含 EXIF 信息，请移除 EXIF 数据后再次提交:',
+                'We detected EXIF data in the following files. Please remove the EXIF data and resubmit:',
+                '',
+                fileList,
+                '',
+                `📖 [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/master/CONTRIBUTING.md)`
+              ].join('\n');
+              try { await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body }); }
+              catch (e) { core.warning(`Cannot comment: ${e.message}. Check repo Settings > Actions > Workflow permissions.`); }
+              core.setFailed('EXIF data detected. Please remove EXIF data for privacy protection.');
+            } else {
+              core.info('No EXIF data found. ✅');
+            }
