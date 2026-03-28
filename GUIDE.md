@@ -1,4 +1,5 @@
-# 🌟 新手指南 / Beginner Guide
+#
+ 🌟 新手指南 / Beginner Guide
 
 欢迎来到 Dress 项目！这份指南将帮助你完成第一次 Pull Request（PR）。
 
