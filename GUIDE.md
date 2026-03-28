@@ -65,7 +65,7 @@ Fork repo → Add your photos → Commit → Open Pull Request → Wait for revi
 
 > **Clone** = 把远程仓库下载到本地电脑。
 > **Push** = 把本地的 Commit 上传同步到远程仓库（你的 Fork）。  
-> **Clone** = Downloading the remote repository to your local machine.
+> **Clone** = Downloading the remote repository to your local machine. 
 > **Push** = Uploading your local commits back to the remote repository (your Fork).
 
 ```bash
