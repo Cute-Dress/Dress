@@ -90,12 +90,15 @@ jobs:
             if (exifFiles.length) {
               const fileList = exifFiles.map(f => `- ${f}`).join('\n');
               const body = [
-                '我们检测到以下文件包含 EXIF 信息，请移除 EXIF 数据后再次提交:',
+                '我们检测到以下文件包含 EXIF 信息，请[移除 EXIF 数据](https://github.com/${owner}/${repo}/blob/master/CONTRIBUTING.md#%E9%9A%90%E7%A7%81%E6%8F%90%E9%86%92-privacy-notice)后再次提交:',
                 'We detected EXIF data in the following files. Please remove the EXIF data and resubmit:',
                 '',
                 fileList,
                 '',
-                `📖 [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/master/CONTRIBUTING.md)`
+                '---',
+                '',
+                '<small>温馨提示: 您可以直接使用 `/auto-fix` 命令来自动修复这些文件。</small>',
+                '<small>Warm reminder: You can use the `/auto-fix` command to automatically fix these files.</small>'
               ].join('\n');
               try { await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body }); }
               catch (e) { core.warning(`Cannot comment: ${e.message}. Check repo Settings > Actions > Workflow permissions.`); }

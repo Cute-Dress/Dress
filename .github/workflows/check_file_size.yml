@@ -67,6 +67,11 @@ jobs:
             We have noted that the following files exceed 1MB in size. Please resubmit your pull request after compressing them:
 
             ${oversized.join("\n")}
+            
+            ---
+            
+            <small>温馨提示: 您可以直接使用 `/auto-fix` 命令来自动修复这些文件。</small>
+            <small>Warm reminder: You can use the `/auto-fix` command to automatically fix these files.</small>
               `.trim();
 
               await github.rest.issues.createComment({
