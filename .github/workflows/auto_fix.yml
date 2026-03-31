@@ -101,6 +101,7 @@ jobs:
 
       - name: Process Phase 2 - Compress Oversized Images
         id: compress
+        continue-on-error: true
         run: |
           if [ ! -s changed_images.txt ]; then exit 0; fi
           
@@ -162,6 +163,8 @@ jobs:
           fi
 
       - name: Push Changes
+        id: push
+        if: steps.compress.outcome != 'failure'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -177,14 +180,13 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const { conclusion } = context.job;
+            const compressOutcome = "${{ steps.compress.outcome }}";
             const failedList = `${{ steps.compress.outputs.failed_list }}`;
             const commentId = `${{ steps.init.outputs.comment_id }}`;
             
             let message = "";
-            if (conclusion === 'success') {
-              message = "✅ **自动修复成功 (Auto-fix completed successfully)!**\nEXIF 信息已被移除且文件已被压缩。(EXIF data removed and files compressed if needed. Check the latest commits.)";
-            } else if (failedList.trim().length > 0) {
+            if (compressOutcome === 'failure' && failedList.trim().length > 0) {
+              // Compression failed because some files couldn't be brought under 1MB
               message = `❌ **自动修复未完全成功 (Auto-fix failed to compress some files).**
             
             自动修复算法无法在保持分辨率的前提下，将以下文件压缩至 1MB 以内：
@@ -198,8 +200,12 @@ jobs:
             
             *请放心，为了防止冲突，本次自动化修改已被拦截，没有发起代码推送。*
             *(The auto-fix push was aborted to prevent conflicts.)*`;
-            } else {
+            } else if (compressOutcome === 'failure') {
+              // Unexpected failure in the compress step
               message = "❌ **自动修复失败 (Auto-fix failed).**\n请查看 [Actions Log](" + context.serverUrl + "/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + context.runId + ") 获取详情。(Please check the Actions Log for details.)";
+            } else {
+              // success or skipped — everything went fine
+              message = "✅ **自动修复成功 (Auto-fix completed successfully)!**\nEXIF 信息已被移除且文件已被压缩（如需要）。(EXIF data removed and files compressed if needed. Check the latest commits.)";
             }
             
             if (commentId && commentId !== "undefined" && commentId !== "") {
