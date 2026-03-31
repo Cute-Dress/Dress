@@ -12,10 +12,9 @@ permissions:
 jobs:
   auto-fix:
     name: Auto-fix Images (EXIF & Size)
-    # 限制只有当评论包含 /auto-fix，且是在拉取请求上，同时评论者有权限时才执行
     if: >
       github.event.issue.pull_request &&
-      github.event.comment.body == '/auto-fix' &&
+      startsWith(github.event.comment.body, '/auto-fix') &&
       (github.event.comment.author_association == 'OWNER' ||
        github.event.comment.author_association == 'MEMBER' ||
        github.event.comment.author_association == 'COLLABORATOR' ||
@@ -56,20 +55,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Checkout PR branch using github CLI
           gh pr checkout ${{ github.event.issue.number }}
 
       - name: Install dependencies
         run: |
-          command -v exiftool && command -v mogrify && exit 0
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl imagemagick jpegoptim optipng
+          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl imagemagick jpegoptim optipng pngquant
 
       - name: Get list of changed image files
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Use gh pr diff to fetch only the names of modified/added files
           gh pr diff ${{ github.event.issue.number }} --name-only | grep -iE '\.(jpe?g|png|webp|tiff?|hei[cf]|avif|gif)$' > changed_images.txt || true
           
           if [ ! -s changed_images.txt ]; then
@@ -87,7 +83,6 @@ jobs:
           exif_files_changed=0
           while IFS= read -r file; do
             if [ -f "$file" ]; then
-              # Count EXIF tags
               count=$(exiftool -EXIF:all -S -q -- "$file" 2>/dev/null | wc -l || echo 0)
               if [ "$count" -gt 0 ]; then
                 echo "Removing EXIF: $file"
@@ -103,10 +98,12 @@ jobs:
           fi
 
       - name: Process Phase 2 - Compress Oversized Images
+        id: compress
         run: |
           if [ ! -s changed_images.txt ]; then exit 0; fi
           
           size_files_changed=0
+          failed_files=()
           MAX_SIZE=$((1024 * 1024)) # 1MB Limit
           
           while IFS= read -r file; do
@@ -115,35 +112,47 @@ jobs:
               if [ "$size" -gt "$MAX_SIZE" ]; then
                 echo "Compressing: $file ($size bytes)"
                 
-                # Check extension for appropriate lossless/lossy strategy
                 ext="${file##*.}"
                 ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
                 
                 case "$ext_lower" in
                   jpg|jpeg)
-                    # jpegoptim reduces quality to meet size target
-                    jpegoptim --size=990k "$file" || mogrify -quality 80 "$file"
+                    jpegoptim --size=990k "$file" || mogrify -quality 75 "$file"
                     ;;
                   png)
-                    # optipng achieves lossless compression
-                    optipng -o2 "$file"
-                    
-                    # If still oversized, fallback to mogrify (lossy output, but keeps resolution/extension)
-                    new_size=$(stat -c%s "$file" 2>/dev/null || echo 0)
-                    if [ "$new_size" -gt "$MAX_SIZE" ]; then
-                       echo "PNG still >1MB after lossless optipng. Using mogrify."
-                       mogrify -quality 80 "$file"
-                    fi
+                    # Use pngquant for highly effective lossy PNG compression first
+                    pngquant --quality=60-80 --ext .png --force "$file" || optipng -o2 "$file"
                     ;;
                   *)
-                    # Universal approach for WebP/GIF/HEIC to limit size/quality
-                    mogrify -quality 80 "$file"
+                    mogrify -quality 75 "$file"
                     ;;
                 esac
-                size_files_changed=1
+                
+                # Check if file size is successfully reduced under 1MB
+                new_size=$(stat -c%s "$file" 2>/dev/null || echo 0)
+                if [ "$new_size" -gt "$MAX_SIZE" ]; then
+                   echo "Failed to compress $file below 1MB (Current: $new_size bytes)"
+                   failed_files+=("$file")
+                else
+                   size_files_changed=1
+                fi
               fi
             fi
           done < changed_images.txt
+
+          if [ ${#failed_files[@]} -gt 0 ]; then
+             echo "Some files failed to compress below 1MB."
+             {
+               echo "failed=true"
+               echo "failed_list<<EOF"
+               for f in "${failed_files[@]}"; do echo "- $f"; done
+               echo "EOF"
+             } >> $GITHUB_OUTPUT
+             
+             # Revert changes to prevent pushing conflicted or partial states
+             git reset --hard
+             exit 1
+          fi
 
           if [ "$size_files_changed" -eq 1 ]; then
             git add .
@@ -154,7 +163,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # If we have local commits that are not in the upstream branch yet, push them.
           if ! git diff --quiet @{u}...HEAD; then
             echo "Pushing changes back to the PR branch..."
             git push
@@ -168,9 +176,28 @@ jobs:
         with:
           script: |
             const { conclusion } = context.job;
-            const message = conclusion === 'success' 
-              ? "✅ **自动修复成功 (Auto-fix completed successfully)!**\nEXIF 信息已被移除且文件已被压缩（如有必要）。(EXIF data removed and files compressed if needed. Check the latest commits.)"
-              : "❌ **自动修复失败 (Auto-fix failed).**\n请查看 [Actions Log](" + context.serverUrl + "/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + context.runId + ") 获取详细信息。 (Please check the Actions Log for details.)";
+            const failedList = `${{ steps.compress.outputs.failed_list }}`;
+            
+            let message = "";
+            if (conclusion === 'success') {
+              message = "✅ **自动修复成功 (Auto-fix completed successfully)!**\nEXIF 信息已被移除且文件已被压缩。(EXIF data removed and files compressed if needed. Check the latest commits.)";
+            } else if (failedList.trim().length > 0) {
+              message = `❌ **自动修复未完全成功 (Auto-fix failed to compress some files).**
+            
+            自动修复算法无法在保持分辨率的前提下，将以下文件压缩至 1MB 以内：
+            (The automated algorithm could not compress the following files strictly under 1MB without reducing their resolution:)
+            
+            ${failedList}
+            
+            **如何手动修复 (How to fix manually):**
+            为了满足通过条件，请您在本地手动将这些图片尺寸缩小（缩小分辨率/长宽），或者转换为更高压缩率的格式后再次提交。
+            (Please manually scale down the images' resolution or convert them to a more efficient format and commit again.)
+            
+            *请放心，为了防止冲突，本次自动化修改已被拦截，没有发起代码推送。*
+            *(The auto-fix push was aborted to prevent conflicts.)*`;
+            } else {
+              message = "❌ **自动修复失败 (Auto-fix failed).**\n请查看 [Actions Log](" + context.serverUrl + "/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + context.runId + ") 获取详情。(Please check the Actions Log for details.)";
+            }
             
             await github.rest.issues.createComment({
               owner: context.repo.owner,
