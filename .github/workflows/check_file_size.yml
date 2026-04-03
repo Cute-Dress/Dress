@@ -46,21 +46,32 @@ jobs:
             }
 
             for (const file of files) {
-              // 只检查新增或修改文件
-              if (!['added','modified','renamed','copied'].includes(file.status))
+              try {
+                // 只检查新增或修改文件
+                if (!['added','modified','renamed','copied'].includes(file.status))
+                  continue;
+
+                // 先编码 %，再编码 # 和 ?，避免双重编码问题。
+                const encodedPath = file.filename
+                  .replace(/%/g, '%25')
+                  .replace(/#/g, '%23')
+                  .replace(/\?/g, '%3F');
+
+                const content = await github.rest.repos.getContent({
+                  owner: pr.head.repo.owner.login,
+                  repo: pr.head.repo.name,
+                  path: encodedPath,
+                  ref: pr.head.sha
+                });
+
+                const size = content.data.size;
+
+                if (size > MAX_SIZE) {
+                  oversized.push(`- ${file.filename} (${size} bytes)`);
+                }
+              } catch (error) {
+                core.warning(`Skip file ${file.filename}: ${error.message}`);
                 continue;
-
-              const content = await github.rest.repos.getContent({
-                owner: pr.head.repo.owner.login,
-                repo: pr.head.repo.name,
-                path: file.filename,
-                ref: pr.head.sha
-              });
-
-              const size = content.data.size;
-
-              if (size > MAX_SIZE) {
-                oversized.push(`- ${file.filename} (${size} bytes)`);
               }
             }
 
