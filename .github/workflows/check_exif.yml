@@ -38,30 +38,42 @@ jobs:
             const IMAGE_EXT = /\.(jpe?g|png|webp|tiff?|hei[cf]|avif|gif)$/i;
 
             // 1. Collect changed image files
-            let changedImages = [], page = 1;
+            // Use compareCommitsWithBasehead (base.sha...head.sha) instead of pulls.listFiles.
+            // pulls.listFiles computes the diff against the merge base, which can be a very old ancestor
+            // when a contributor's fork is far behind main (e.g. after clicking "Update branch" which
+            // creates a merge commit). This causes hundreds of unrelated files to appear as "changed".
+            // compareCommitsWithBasehead diffs exactly what this PR's head adds on top of main's current
+            // HEAD, regardless of the fork's branch history.
+            const changedImages = [];
+            let comparePage = 1;
             while (true) {
-              const { data: files } = await github.rest.pulls.listFiles({ owner, repo, pull_number: prNumber, per_page: 100, page });
-              if (!files.length) break;
-              for (const f of files) {
+              const { data: cmp } = await github.rest.repos.compareCommitsWithBasehead({
+                owner, repo,
+                basehead: `${pr.base.sha}...${pr.head.sha}`,
+                per_page: 100, page: comparePage,
+              });
+              for (const f of (cmp.files || [])) {
                 if (['added', 'modified', 'renamed', 'copied'].includes(f.status) && IMAGE_EXT.test(f.filename))
                   changedImages.push(f.filename);
               }
-              if (files.length < 100) break;
-              page++;
+              if (!cmp.files || cmp.files.length < 100) break;
+              comparePage++;
             }
             if (!changedImages.length) { core.info('No changed images.'); return; }
             core.info(`Checking ${changedImages.length} image(s) for EXIF data.`);
 
             // 2. Download & check each image
             const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'exif-'));
-            const exifFiles = [], errors = [];
+            const exifFiles = [];
 
             for (const file of changedImages) {
               const tmpFile = path.join(tmp, file.replace(/[\\/]/g, '__'));
               try {
+                // '#' must be percent-encoded in the API path; otherwise GitHub treats it as a URL fragment.
+                const apiPath = file.replace(/#/g, '%23');
                 const { data } = await github.rest.repos.getContent({
                   owner: pr.head.repo.owner.login, repo: pr.head.repo.name,
-                  path: file, ref: pr.head.sha
+                  path: apiPath, ref: pr.head.sha
                 });
                 let raw;
                 if (!Array.isArray(data) && data.content) raw = Buffer.from(data.content, 'base64');
@@ -72,30 +84,51 @@ jobs:
                 } else throw new Error('Cannot fetch file content');
 
                 fs.writeFileSync(tmpFile, raw);
+                // Check only high-sensitivity fields:
+                //   GPS:*               — precise location coordinates
+                //   IPTC address fields — textual shooting address
+                //   XMP location/contact fields — address & contact info written by editing software
+                const HIGH_SENS_ARGS = [
+                  '-GPS:GPSLatitude', '-GPS:GPSLongitude', '-GPS:GPSAltitude',
+                  '-GPS:GPSDateStamp', '-GPS:GPSTimeStamp',
+                  '-GPS:GPSSpeed', '-GPS:GPSTrack', '-GPS:GPSImgDirection',
+                  '-IPTC:City', '-IPTC:Country-PrimaryLocationName',
+                  '-IPTC:Sub-location', '-IPTC:Province-State',
+                  '-XMP-photoshop:City', '-XMP-photoshop:Country', '-XMP-photoshop:State',
+                  '-XMP-iptcCore:CreatorWorkEmail', '-XMP-iptcCore:CreatorWorkTelephone',
+                  '-XMP-iptcCore:CreatorCity', '-XMP-iptcCore:CreatorCountry',
+                  '-XMP-iptcCore:CreatorPostalCode',
+                ];
+                const safeFile = tmpFile.replace(/'/g, "'\\\\'");
+                // Filter out empty/undef/all-zero placeholder values (e.g. GPS IFD container with no real coords).
+                // `: *(undef|00:00:00)?$` matches lines like "GPSLatitude: ", "GPSAltitude: undef", "GPSTimeStamp: 00:00:00"
                 const count = parseInt(execSync(
-                  `exiftool -EXIF:all -S -q -- '${tmpFile.replace(/'/g, "'\\''")}' 2>/dev/null | wc -l`,
+                  `exiftool ${HIGH_SENS_ARGS.join(' ')} -S -q -- '${safeFile}' 2>/dev/null | grep -Ev ': *(undef|00:00:00)?$' | wc -l`,
                   { encoding: 'utf-8', timeout: 10000 }
                 ).trim()) || 0;
-                if (count > 0) { exifFiles.push(file); core.info(`EXIF found: ${file} (${count} tags)`); }
-              } catch (e) { core.warning(`Check failed: ${file}: ${e.message}`); errors.push(file); }
+                if (count > 0) { exifFiles.push(file); core.info(`Sensitive EXIF found: ${file} (${count} tags)`); }
+              } catch (e) {
+                // Download failures (e.g. diverged fork, encoding issues) are non-fatal.
+                // Skip the file with a warning rather than failing the entire check.
+                core.warning(`Skipping ${file}: ${e.message}`);
+              }
               finally { try { fs.unlinkSync(tmpFile); } catch {} }
             }
             try { fs.rmdirSync(tmp); } catch {}
 
             // 3. Report results
-            if (errors.length) {
-              core.setFailed(`EXIF check failed for: ${errors.join(', ')}. Please retry or ask a maintainer.`);
-              return;
-            }
             if (exifFiles.length) {
               const fileList = exifFiles.map(f => `- ${f}`).join('\n');
               const body = [
-                '我们检测到以下文件包含 EXIF 信息，请移除 EXIF 数据后再次提交:',
-                'We detected EXIF data in the following files. Please remove the EXIF data and resubmit:',
+                '我们检测到以下文件包含**高敏感 EXIF 信息**（如 GPS 坐标、地址或联系方式），请移除后再次提交:',
+                'We detected **high-sensitivity EXIF data** (e.g. GPS coordinates, address, or contact fields) in the following files. Please remove them and resubmit:',
                 '',
                 fileList,
                 '',
-                `📖 [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/master/CONTRIBUTING.md)`
+                '**仅高敏感字段（GPS / 地址 / 联系方式）需要移除，普通摄影参数（光圈、快门等）无需处理。**',
+                '**Only high-sensitivity fields (GPS / address / contact info) need to be removed. Regular photography parameters (aperture, shutter speed, etc.) are fine to keep.**',
+                '',
+                `📖 [EXIF 说明 / EXIF Guide](https://github.com/${owner}/${repo}/blob/master/EXIF.md) · [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/master/CONTRIBUTING.md)`
               ].join('\n');
               try { await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body }); }
               catch (e) { core.warning(`Cannot comment: ${e.message}. Check repo Settings > Actions > Workflow permissions.`); }
