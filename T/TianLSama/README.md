@@ -19,7 +19,3 @@ _标签：伪娘 计算机 网络 硬件 二次元 神椿 KAMITSUBAKI STUDIO 异
 3. B站(点个关注吧喵，求求了喵)：[UID: 3493259009591847](https://space.bilibili.com/3493259009591847)
 4. X：[@TianLSama](https://x.com/TianLSama)
 5. GitHub：[TianLSama (Maybe TianLSama)](https://github.com/TianLSama)
-
-### 更新日志
-
-_2026/03/29_ 第一次提交，上传23张图片，创建README.md文件
