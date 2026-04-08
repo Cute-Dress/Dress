@@ -117,7 +117,10 @@ git push origin main
 提交 PR 后，自动化机器人会帮你检查：
 
 - 📏 **文件大小检查**：图片是否在 1MB 以内
-- 🔒 **EXIF 信息检查**：图片是否包含隐私元数据
+- 🔒 **EXIF 信息检查**：图片是否包含高敏感元数据（主要是 **GPS 坐标**及地址类字段）
+
+> 机器人只会拦截高敏感字段（例如 GPS 坐标、IPTC/XMP 地址信息），普通摄影参数（光圈、快门等）不会导致 PR 被拒。
+> 了解详情请阅读 [EXIF.md](EXIF.md)。
 
 如果检查未通过，机器人会留下评论告诉你如何修正。你可以按照提示修改后再次推送（push），PR 会自动更新。
 
@@ -128,7 +131,11 @@ git push origin main
 After submitting the PR, automated bots will check:
 
 - 📏 **File size check**: Are images under 1MB?
-- 🔒 **EXIF data check**: Do images contain private metadata?
+- 🔒 **EXIF data check**: Do images contain high-sensitivity metadata (primarily **GPS coordinates** and address fields)
+
+> The bot only blocks high-sensitivity fields such as GPS coordinates and IPTC/XMP location data.
+> Regular photography parameters (aperture, shutter speed, etc.) will not cause your PR to fail.
+> See [EXIF.md](EXIF.md) for details.
 
 If any check fails, the bot will leave a comment explaining how to fix it. You can make changes and push again — the PR will update automatically.
 
@@ -139,16 +146,20 @@ Once a maintainer approves, your PR will be merged. Congratulations on your firs
 ## ⚠️ 提交前请注意 / Before You Submit
 
 1. **压缩图片** — 确保每张图片小于 1MB。可以使用 [TinyPNG](https://tinypng.com/) 等在线工具压缩。
-2. **移除 EXIF 信息** — 照片可能包含你的位置、设备等隐私信息。详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+2. **移除高敏感 EXIF 信息** — 最重要的是删除 **GPS 坐标**，它能精确暴露你的拍摄地点。照片还可能携带地址、联系方式等信息。详见 [EXIF.md](EXIF.md) 和 [CONTRIBUTING.md](CONTRIBUTING.md)。
 3. **正确命名文件夹** — 使用你的 GitHub ID 命名，并放在对应首字母目录下。
 4. **原创图片** — 只提交你自己的照片，不接受盗图。
+5. **只修改自己的文件夹** — 请不要改动他人的文件夹或其他项目文件，避免给维护者带来不必要的麻烦。
+6. **文件名避免中文和空格** — 文件名中的中文字符或空格可能导致部分系统无法正常显示或下载，请尽量使用英文字母、数字和连字符。
 
 ---
 
 1. **Compress images** — Make sure each image is under 1MB. Use tools like [TinyPNG](https://tinypng.com/).
-2. **Remove EXIF data** — Photos may contain your location, device info, etc. See [CONTRIBUTING.md](CONTRIBUTING.md).
+2. **Remove sensitive EXIF data** — The most important thing is to strip **GPS coordinates**, which can reveal your exact shooting location. Photos may also carry address and contact-info fields. See [EXIF.md](EXIF.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 3. **Name your folder correctly** — Use your GitHub ID and place it under the matching alphabetical directory.
 4. **Original images only** — Only submit your own photos. Stolen images are not accepted.
+5. **Only modify your own folder** — Do not touch other contributors' folders or any other project files.
+6. **Avoid Chinese characters and spaces in filenames** — Use letters, numbers, and hyphens only to ensure compatibility across all systems.
 
 ---
 
@@ -156,5 +167,6 @@ Once a maintainer approves, your PR will be merged. Congratulations on your firs
 
 - [项目说明 / Project README](README.md)
 - [贡献指南 / Contributing Guide](CONTRIBUTING.md)
+- [EXIF 说明 / EXIF Guide](EXIF.md)
 - [项目详细说明 / Detailed README](README_DETAIL.md)
 - [已合并的 PR 参考 / Merged PRs for reference](https://github.com/Cute-Dress/Dress/pulls?q=is%3Apr+is%3Amerged)
