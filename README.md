@@ -74,3 +74,9 @@ This repository is licensed under a Creative Commons Attribution-NonCommercial-S
 请仔细阅读[CONTRIBUTING.md](CONTRIBUTING.md)
 
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) carefully.
+
+### 新手指南 / Beginner Guide
+
+第一次参与？请阅读 [新手指南 / Beginner Guide](GUIDE.md)，了解完整的 Fork → 提交 → PR 流程。
+
+First time contributing? Read the [Beginner Guide](GUIDE.md) for a step-by-step walkthrough of the Fork → Commit → PR workflow.
