@@ -1,9 +1,9 @@
 <?php
 // 定义 MySQL 服务器信息
-$mysqlserveraddress = 'maria.chenleqi767.top';  // 服务器地址
+$mysqlserveraddress = '[CENSORED]';  // 服务器地址
 $mysqlusername = 'root';  // 服务器登录用户名
-$mysqlpassword = 'zauawq4x';  // 服务器登录密码
-$mysqldatabase = 'DMS-SYYZ';  // 数据库名称
+$mysqlpassword = '[CENSORED]';  // 服务器登录密码
+$mysqldatabase = 'EXAMPLE';  // 数据库名称
 $mysqlport = '3306';  // 服务器端口号
 
 // 连接数据库
