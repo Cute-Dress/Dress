@@ -1,4 +1,4 @@
-TheLambdaEnergy X/Bilibili/Github
+TheLambdaEnergy X/Bilibili/GitHub
 
 BG7ZFK
 
