@@ -23,30 +23,44 @@ jobs:
             const repo = context.repo.repo;
             const pr = context.payload.pull_request;
 
-            let page = 1;
             let oversized = [];
+            let page = 1;
+            let files = [];
 
             while (true) {
-              const response = await github.rest.pulls.listFiles({
+              const compare = await github.rest.repos.compareCommitsWithBasehead({
                 owner,
                 repo,
-                pull_number: prNumber,
+                basehead: `${pr.base.sha}...${pr.head.sha}`,
                 per_page: 100,
                 page
               });
 
-              const files = response.data;
-              if (files.length === 0) break;
+              const pageFiles = compare.data.files || [];
+              if (pageFiles.length === 0) break;
 
-              for (const file of files) {
+              files.push(...pageFiles);
+
+              if (pageFiles.length < 100) break;
+              page++;
+            }
+
+            for (const file of files) {
+              try {
                 // 只检查新增或修改文件
-                if (!["added","modified","renamed","copied"].includes(file.status))
+                if (!['added','modified','renamed','copied'].includes(file.status))
                   continue;
+
+                // 先编码 %，再编码 # 和 ?，避免双重编码问题。
+                const encodedPath = file.filename
+                  .replace(/%/g, '%25')
+                  .replace(/#/g, '%23')
+                  .replace(/\?/g, '%3F');
 
                 const content = await github.rest.repos.getContent({
                   owner: pr.head.repo.owner.login,
                   repo: pr.head.repo.name,
-                  path: file.filename,
+                  path: encodedPath,
                   ref: pr.head.sha
                 });
 
@@ -55,10 +69,10 @@ jobs:
                 if (size > MAX_SIZE) {
                   oversized.push(`- ${file.filename} (${size} bytes)`);
                 }
+              } catch (error) {
+                core.warning(`Skip file ${file.filename}: ${error.message}`);
+                continue;
               }
-
-              if (files.length < 100) break;
-              page++;
             }
 
             if (oversized.length > 0) {
@@ -67,6 +81,11 @@ jobs:
             We have noted that the following files exceed 1MB in size. Please resubmit your pull request after compressing them:
 
             ${oversized.join("\n")}
+            
+            ---
+            
+            <small>温馨提示: 您可以直接使用 `/auto-fix` 命令来自动修复这些文件。</small>
+            <small>Warm reminder: You can use the `/auto-fix` command to automatically fix these files.</small>
               `.trim();
 
               await github.rest.issues.createComment({
