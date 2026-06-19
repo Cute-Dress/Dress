@@ -1,0 +1,225 @@
+name: Auto-fix Image Files
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  auto-fix:
+    name: Auto-fix Images (EXIF & Size)
+    if: >
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/auto-fix') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR' ||
+       github.event.comment.user.login == github.event.issue.user.login)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Acknowledge command and start processing
+        id: init
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: "rocket"
+            });
+            const response = await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "🚀 自动修复工作中...(Auto-fix initiated! Processing images...)"
+            });
+            core.setOutput("comment_id", response.data.id);
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git identity and auth
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          gh auth setup-git
+
+      - name: Checkout PR branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr checkout ${{ github.event.issue.number }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl imagemagick jpegoptim optipng pngquant
+
+      - name: Get list of changed image files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr diff ${{ github.event.issue.number }} --name-only | grep -iE '\.(jpe?g|png|webp|tiff?|hei[cf]|avif|gif)$' > changed_images.txt || true
+          
+          if [ ! -s changed_images.txt ]; then
+            echo "No images changed in this PR."
+            exit 0
+          fi
+          
+          echo "Changed images to process:"
+          cat changed_images.txt
+
+      - name: Process Phase 1 - Remove EXIF Data
+        run: |
+          if [ ! -s changed_images.txt ]; then exit 0; fi
+          
+          exif_files_changed=0
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              count=$(exiftool -EXIF:all -S -q -- "$file" 2>/dev/null | wc -l || echo 0)
+              if [ "$count" -gt 0 ]; then
+                echo "Removing EXIF: $file"
+                exiftool -all= -overwrite_original "$file"
+                exif_files_changed=1
+              fi
+            fi
+          done < changed_images.txt
+
+          if [ "$exif_files_changed" -eq 1 ]; then
+            git add .
+            git commit -m "chore: auto-remove EXIF data from images" || true
+          fi
+
+      - name: Process Phase 2 - Compress Oversized Images
+        id: compress
+        continue-on-error: true
+        run: |
+          if [ ! -s changed_images.txt ]; then exit 0; fi
+          
+          size_files_changed=0
+          failed_files=()
+          MAX_SIZE=$((1024 * 1024)) # 1MB Limit
+          
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              size=$(stat -c%s "$file" 2>/dev/null || stat -f%z "$file" 2>/dev/null || echo 0)
+              if [ "$size" -gt "$MAX_SIZE" ]; then
+                echo "Compressing: $file ($size bytes)"
+                
+                ext="${file##*.}"
+                ext_lower=$(echo "$ext" | tr '[:upper:]' '[:lower:]')
+                
+                case "$ext_lower" in
+                  jpg|jpeg)
+                    jpegoptim --size=990k "$file" || mogrify -quality 75 "$file"
+                    ;;
+                  png)
+                    # Use pngquant for highly effective lossy PNG compression first
+                    pngquant --quality=60-80 --ext .png --force "$file" || optipng -o2 "$file"
+                    ;;
+                  *)
+                    mogrify -quality 75 "$file"
+                    ;;
+                esac
+                
+                # Check if file size is successfully reduced under 1MB
+                new_size=$(stat -c%s "$file" 2>/dev/null || echo 0)
+                if [ "$new_size" -gt "$MAX_SIZE" ]; then
+                   echo "Failed to compress $file below 1MB (Current: $new_size bytes)"
+                   failed_files+=("$file")
+                else
+                   size_files_changed=1
+                fi
+              fi
+            fi
+          done < changed_images.txt
+
+          if [ ${#failed_files[@]} -gt 0 ]; then
+             echo "Some files failed to compress below 1MB."
+             {
+               echo "failed=true"
+               echo "failed_list<<EOF"
+               for f in "${failed_files[@]}"; do echo "- $f"; done
+               echo "EOF"
+             } >> $GITHUB_OUTPUT
+             
+             # Revert changes to prevent pushing conflicted or partial states
+             git reset --hard
+             exit 1
+          fi
+
+          if [ "$size_files_changed" -eq 1 ]; then
+            git add .
+            git commit -m "chore: auto-compress oversized images" || true
+          fi
+
+      - name: Push Changes
+        id: push
+        if: steps.compress.outcome != 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! git diff --quiet @{u}...HEAD; then
+            echo "Pushing changes back to the PR branch..."
+            git push
+          else
+            echo "No changes made during processing."
+          fi
+
+      - name: Report Completion
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const compressOutcome = "${{ steps.compress.outcome }}";
+            const failedList = `${{ steps.compress.outputs.failed_list }}`;
+            const commentId = `${{ steps.init.outputs.comment_id }}`;
+            
+            let message = "";
+            if (compressOutcome === 'failure' && failedList.trim().length > 0) {
+              // Compression failed because some files couldn't be brought under 1MB
+              message = `❌ **自动修复未完全成功 (Auto-fix failed to compress some files).**
+            
+            自动修复算法无法在保持分辨率的前提下，将以下文件压缩至 1MB 以内：
+            (The automated algorithm could not compress the following files strictly under 1MB without reducing their resolution:)
+            
+            ${failedList}
+            
+            **如何手动修复 (How to fix manually):**
+            为了满足通过条件，请您在本地手动将这些图片尺寸缩小（缩小分辨率/长宽），或者转换为更高压缩率的格式后再次提交。
+            (Please manually scale down the images' resolution or convert them to a more efficient format and commit again.)
+            
+            *请放心，为了防止冲突，本次自动化修改已被拦截，没有发起代码推送。*
+            *(The auto-fix push was aborted to prevent conflicts.)*`;
+            } else if (compressOutcome === 'failure') {
+              // Unexpected failure in the compress step
+              message = "❌ **自动修复失败 (Auto-fix failed).**\n请查看 [Actions Log](" + context.serverUrl + "/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + context.runId + ") 获取详情。(Please check the Actions Log for details.)";
+            } else {
+              // success or skipped — everything went fine
+              message = "✅ **自动修复成功 (Auto-fix completed successfully)!**\nEXIF 信息已被移除且文件已被压缩（如需要）。(EXIF data removed and files compressed if needed. Check the latest commits.)";
+            }
+            
+            if (commentId && commentId !== "undefined" && commentId !== "") {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: parseInt(commentId, 10),
+                body: message
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: message
+              });
+            }
