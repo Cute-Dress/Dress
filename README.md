@@ -61,7 +61,7 @@ This simple repository requires no contribution of code, so that you can partici
 
 ### 贡献者 / Contributors
 
-[![contributors](https://contrib.rocks/image?repo=Cute-Dress/Dress&max=999&column=20)](https://github.com/Cute-Dress/Dress/graphs/contributors)
+[![contributors](https://contrib.rocks/image?repo=Cute-Dress/Dress&max=999&columns=20)](https://github.com/Cute-Dress/Dress/graphs/contributors)
 
 ### 许可 / License
 
