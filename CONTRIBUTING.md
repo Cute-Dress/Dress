@@ -11,6 +11,8 @@
 
 照片中有 EXIF 数据，会存储地理位置、拍照设备等信息。请留意意外的个人信息泄漏，push照片前，请仔细检查照片的EXIF信息是否得到妥善处理。如果你不想公开这些信息，可以删除 EXIF。
 
+本项目会自动拦截 GPS、地址和联系方式等高敏感元数据。具体字段范围及敏感级别请查看 [EXIF 字段说明](EXIF.md)。
+
 删除方法参考：
 
 > 使用 [GIMP](https://www.gimp.org/downloads/)：打开 GIMP，导入需要处理的图片。点击「文件」 > 「导出为」，选择图片格式如 JPEG。在弹出的「导出图像」窗口中，点击「高级选项」。取消勾选「保存 EXIF 数据」。点击「导出」，保存图片时EXIF信息将被删除。
@@ -22,6 +24,8 @@
 > 使用在线工具：打开任意一个EXIF删除的在线工具网站，上传需要处理的图片文件，网站会自动处理图片并去除EXIF信息，下载处理后的图片即可。（如考虑到安全问题请采取其他方法）
 
 Please pay attention to preventing the accidental leakage of personal information. Please check carefully whether the EXIF information is properly handled (such as GPS tags) before you push the photo(s). If you want to delete EXIF, you can refer to the means below:
+
+The project automatically blocks high-sensitivity metadata such as GPS, address, and contact fields. See the [EXIF field guide](EXIF.md) for the exact scope and sensitivity levels.
 
 > Via [GIMP](https://www.gimp.org/downloads/)：Open GIMP and import the image you want to edit. Go to "File" > "Export As" and choose a format like JPEG. In the "Export Image" window, click on "Advanced Options". Uncheck the "Save EXIF data" option. Click "Export" to save the image without EXIF data.
 > 
