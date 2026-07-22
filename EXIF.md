@@ -11,6 +11,10 @@ Every time you take a photo, your device silently records details about when, wh
 除了 EXIF 本身，图片还可能携带 **IPTC**、**XMP** 等元数据格式，同样能存储位置和个人信息。  
 Besides EXIF itself, images may also carry **IPTC** and **XMP** metadata, which can also store location and personal details.
 
+照片提交准则和常用元数据清理方法请查看 [贡献指南](CONTRIBUTING.md)。
+
+See the [contribution guide](CONTRIBUTING.md) for photo submission criteria and common metadata removal methods.
+
 ---
 
 ## 🔴 高度敏感 / Highly Sensitive

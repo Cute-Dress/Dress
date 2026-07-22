@@ -32,8 +32,8 @@ This simple repository requires no contribution of code, so that you can partici
 - Pull requests with folder names that attempt to influence ordering (ex: ```AAAA.Folder```, ```0.Folder```, ```111Folder```)will be closed
 - 如果需要在你的文件夹内创建描述文件,请尽量使用 [Markdown](https://en.wikipedia.org/wiki/Markdown) 语法来编写
 - If you need to add a descriptive file in your folder, please compose it using [Markdown](https://en.wikipedia.org/wiki/Markdown).
-- 图片请尽量压缩大小（1 MB 以下）, 并 [删除 EXIF 信息](CONTRIBUTING.md), 图片质量过低的 Pull Request 会被 Close
-- Please attempt to compress your images (less than 1 MB) and [delete EXIF data](CONTRIBUTING.md), pull requests with excessively large image files will be closed
+- 图片请尽量压缩大小（1 MB 以下），并按 [EXIF 字段说明](EXIF.md) 移除高敏感信息（清理方法见 [贡献指南](CONTRIBUTING.md)），图片质量过低的 Pull Request 会被 Close
+- Please attempt to compress your images (less than 1 MB) and remove high-sensitivity metadata listed in the [EXIF field guide](EXIF.md) using the [removal methods](CONTRIBUTING.md); pull requests with excessively large image files will be closed
 
 ## Star 历史 / Star History
 
@@ -61,7 +61,7 @@ This simple repository requires no contribution of code, so that you can partici
 
 ### 贡献者 / Contributors
 
-[![contributors](https://contrib.rocks/image?repo=Cute-Dress/Dress&max=999&column=20)](https://github.com/Cute-Dress/Dress/graphs/contributors)
+[![contributors](https://contrib.rocks/image?repo=Cute-Dress/Dress&max=999&columns=20)](https://github.com/Cute-Dress/Dress/graphs/contributors)
 
 ### 许可 / License
 

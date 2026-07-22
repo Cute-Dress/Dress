@@ -5,6 +5,7 @@ on:
     types: [created]
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
   issues: write
@@ -68,19 +69,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr diff ${{ github.event.issue.number }} --name-only | grep -iE '\.(jpe?g|png|webp|tiff?|hei[cf]|avif|gif)$' > changed_images.txt || true
+          gh pr diff ${{ github.event.issue.number }} --name-only | grep -iE '\.(jpe?g|png|webp|tiff?|hei[cf]|avif|gif)$' > "$RUNNER_TEMP/changed_images.txt" || true
           
-          if [ ! -s changed_images.txt ]; then
+          if [ ! -s "$RUNNER_TEMP/changed_images.txt" ]; then
             echo "No images changed in this PR."
             exit 0
           fi
           
           echo "Changed images to process:"
-          cat changed_images.txt
+          cat "$RUNNER_TEMP/changed_images.txt"
 
       - name: Process Phase 1 - Remove EXIF Data
         run: |
-          if [ ! -s changed_images.txt ]; then exit 0; fi
+          if [ ! -s "$RUNNER_TEMP/changed_images.txt" ]; then exit 0; fi
           
           exif_files_changed=0
           while IFS= read -r file; do
@@ -89,13 +90,13 @@ jobs:
               if [ "$count" -gt 0 ]; then
                 echo "Removing EXIF: $file"
                 exiftool -all= -overwrite_original "$file"
+                git add -- "$file"
                 exif_files_changed=1
               fi
             fi
-          done < changed_images.txt
+          done < "$RUNNER_TEMP/changed_images.txt"
 
           if [ "$exif_files_changed" -eq 1 ]; then
-            git add .
             git commit -m "chore: auto-remove EXIF data from images" || true
           fi
 
@@ -103,7 +104,7 @@ jobs:
         id: compress
         continue-on-error: true
         run: |
-          if [ ! -s changed_images.txt ]; then exit 0; fi
+          if [ ! -s "$RUNNER_TEMP/changed_images.txt" ]; then exit 0; fi
           
           size_files_changed=0
           failed_files=()
@@ -137,11 +138,12 @@ jobs:
                    echo "Failed to compress $file below 1MB (Current: $new_size bytes)"
                    failed_files+=("$file")
                 else
+                   git add -- "$file"
                    size_files_changed=1
                 fi
               fi
             fi
-          done < changed_images.txt
+          done < "$RUNNER_TEMP/changed_images.txt"
 
           if [ ${#failed_files[@]} -gt 0 ]; then
              echo "Some files failed to compress below 1MB."
@@ -158,7 +160,6 @@ jobs:
           fi
 
           if [ "$size_files_changed" -eq 1 ]; then
-            git add .
             git commit -m "chore: auto-compress oversized images" || true
           fi
 
@@ -175,12 +176,39 @@ jobs:
             echo "No changes made during processing."
           fi
 
+      - name: Re-run image checks
+        id: recheck
+        if: steps.compress.outcome != 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          head_sha=$(git rev-parse HEAD)
+          gh workflow run check_exif.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$DEFAULT_BRANCH" \
+            -f pr_number="$PR_NUMBER" \
+            -f head_sha="$head_sha"
+          gh workflow run check_file_size.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$DEFAULT_BRANCH" \
+            -f pr_number="$PR_NUMBER" \
+            -f head_sha="$head_sha"
+          gh workflow run check_pr_checklist.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref "$DEFAULT_BRANCH" \
+            -f pr_number="$PR_NUMBER" \
+            -f head_sha="$head_sha"
+
       - name: Report Completion
         if: always()
         uses: actions/github-script@v7
         with:
           script: |
             const compressOutcome = "${{ steps.compress.outcome }}";
+            const pushOutcome = "${{ steps.push.outcome }}";
+            const recheckOutcome = "${{ steps.recheck.outcome }}";
             const failedList = `${{ steps.compress.outputs.failed_list }}`;
             const commentId = `${{ steps.init.outputs.comment_id }}`;
             
@@ -200,12 +228,16 @@ jobs:
             
             *请放心，为了防止冲突，本次自动化修改已被拦截，没有发起代码推送。*
             *(The auto-fix push was aborted to prevent conflicts.)*`;
-            } else if (compressOutcome === 'failure') {
-              // Unexpected failure in the compress step
+            } else if (
+              compressOutcome !== 'success' ||
+              pushOutcome !== 'success' ||
+              recheckOutcome !== 'success'
+            ) {
+              // Unexpected failure while fixing, pushing, or starting the checks
               message = "❌ **自动修复失败 (Auto-fix failed).**\n请查看 [Actions Log](" + context.serverUrl + "/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + context.runId + ") 获取详情。(Please check the Actions Log for details.)";
             } else {
               // success or skipped — everything went fine
-              message = "✅ **自动修复成功 (Auto-fix completed successfully)!**\nEXIF 信息已被移除且文件已被压缩（如需要）。(EXIF data removed and files compressed if needed. Check the latest commits.)";
+              message = "✅ **自动修复成功 (Auto-fix completed successfully)!**\nEXIF 信息已被移除且文件已被压缩（如需要），相关检查已重新触发。(EXIF data was removed and files were compressed if needed. The related checks have been re-triggered.)";
             }
             
             if (commentId && commentId !== "undefined" && commentId !== "") {

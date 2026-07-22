@@ -40,9 +40,9 @@ Fork repo → Add your photos → Commit → Open Pull Request → Wait for revi
 ### 方法 A：直接在 GitHub 网页上传（最简单）/ Method A: Upload via GitHub Web (Easiest)
 
 1. 进入你 Fork 后的仓库页面（`https://github.com/<你的用户名>/Dress`）
-2. 找到你 GitHub ID 首字母对应的文件夹（如 ID 为 `Yueosa`，则进入 `Y` 文件夹）
+2. 根据计划使用的个人文件夹名称选择对应的首字母目录（如 `Yueosa` 进入 `Y`，数字或符号开头则进入 `#`）
 3. 点击 **Add file** → **Create new file**
-4. 在文件名栏输入 `你的GitHubID/README.md`（如 `Yueosa/README.md`），这会自动创建文件夹
+4. 在文件名栏输入 `你的文件夹名/README.md`（如 `Yueosa/README.md`），这会自动创建文件夹；文件夹名无需与 GitHub ID 相同
 5. 在文件中随意写一些内容（如自我介绍）
 6. 点击 **Commit changes**
 7. 再次点击 **Add file** → **Upload files**，将你的照片上传到刚创建的文件夹中
@@ -51,9 +51,9 @@ Fork repo → Add your photos → Commit → Open Pull Request → Wait for revi
 ---
 
 1. Go to your forked repository (`https://github.com/<your-username>/Dress`)
-2. Navigate to the folder matching the first letter of your GitHub ID (e.g., `Y` for `Yueosa`)
+2. Navigate to the directory matching the first character of your chosen folder name (e.g., `Y` for `Yueosa`, or `#` for a name starting with a number or symbol)
 3. Click **Add file** → **Create new file**
-4. Type `YourGitHubID/README.md` (e.g., `Yueosa/README.md`) in the filename field — this auto-creates the folder
+4. Type `YourFolderName/README.md` (e.g., `Yueosa/README.md`) in the filename field. This creates the folder, which does not have to match your GitHub ID
 5. Write some content (e.g., a brief introduction)
 6. Click **Commit changes**
 7. Click **Add file** → **Upload files** again, and upload your photos into the folder you just created
@@ -78,14 +78,14 @@ git clone --depth 1 https://github.com/<你的用户名>/Dress.git
 cd Dress
 
 # 2. 创建你的文件夹并添加照片 / Create your folder and add photos
-#    将 <首字母> 替换为你 GitHub ID 的首字母，<你的GitHubID> 替换为你的 GitHub ID
-#    Replace <FirstLetter> with the first letter of your GitHub ID
-mkdir -p <首字母>/<你的GitHubID>
-cp /path/to/your/photos/* <首字母>/<你的GitHubID>/
+#    <首字母> 应与 <你的文件夹名> 的首字符对应；数字或符号开头时使用 #
+#    <FirstLetter> must match the first character of <YourFolderName>; use # for a number or symbol
+mkdir -p <首字母>/<你的文件夹名>
+cp /path/to/your/photos/* <首字母>/<你的文件夹名>/
 
 # 3. 提交更改 / Commit your changes
 git add .
-git commit -m "Add photos for <你的GitHubID>"
+git commit -m "Add photos for <你的文件夹名>"
 
 # 4. 推送到你的 Fork / Push to your fork
 git push origin main
@@ -100,14 +100,14 @@ git push origin main
 
 1. 回到你 Fork 的仓库页面
 2. 你会看到一个提示 **"This branch is X commits ahead"**，点击 **Contribute** → **Open pull request**
-3. 填写 PR 模板中的描述和检查清单
+3. 建议自行确认并勾选 PR 模板中的全部项目；若前三项未勾选，机器人会在自动检查通过后补充勾选，原创声明必须由你手动确认
 4. 点击 **Create pull request**
 
 ---
 
 1. Go back to your forked repository page
 2. You should see a prompt saying **"This branch is X commits ahead"** — click **Contribute** → **Open pull request**
-3. Fill in the description and checklist in the PR template
+3. Review and check every item in the PR template yourself. If the first three items are left unchecked, the bot fills them in after their automated checks pass; you must always confirm the originality declaration manually
 4. Click **Create pull request**
 
 ---
@@ -118,11 +118,12 @@ git push origin main
 
 - 📏 **文件大小检查**：图片是否在 1MB 以内
 - 🔒 **EXIF 信息检查**：图片是否包含高敏感元数据（主要是 **GPS 坐标**及地址类字段）
+- 📂 **目录归类检查**：个人文件夹是否位于与其首字符对应的 `A-Z/#` 目录下
 
 > 机器人只会拦截高敏感字段（例如 GPS 坐标、IPTC/XMP 地址信息），普通摄影参数（光圈、快门等）不会导致 PR 被拒。
 > 了解详情请阅读 [EXIF.md](EXIF.md)。
 
-如果检查未通过，机器人会留下评论告诉你如何修正。你可以按照提示修改后再次推送（push），PR 会自动更新。
+建议你先自行确认并勾选清单。若大小、EXIF 或目录项未勾选，机器人只会在对应检查通过后补充勾选；原创声明始终需要你手动确认。如果检查未通过，机器人会留下评论告诉你如何修正。你可以按照提示修改后再次推送（push），PR 会自动更新。
 
 维护者审核通过后，你的 PR 就会被合并。恭喜你完成了第一次开源贡献！🎉
 
@@ -132,12 +133,13 @@ After submitting the PR, automated bots will check:
 
 - 📏 **File size check**: Are images under 1MB?
 - 🔒 **EXIF data check**: Do images contain high-sensitivity metadata (primarily **GPS coordinates** and address fields)
+- 📂 **Folder placement check**: Is the contributor folder under the matching `A-Z/#` directory for its first character?
 
 > The bot only blocks high-sensitivity fields such as GPS coordinates and IPTC/XMP location data.
 > Regular photography parameters (aperture, shutter speed, etc.) will not cause your PR to fail.
 > See [EXIF.md](EXIF.md) for details.
 
-If any check fails, the bot will leave a comment explaining how to fix it. You can make changes and push again — the PR will update automatically.
+You should review and check the checklist yourself first. If the size, EXIF, or folder item is left unchecked, the bot fills it in only after the corresponding check passes. You must always confirm the originality declaration manually. If any check fails, the bot will leave a comment explaining how to fix it. You can make changes and push again — the PR will update automatically.
 
 Once a maintainer approves, your PR will be merged. Congratulations on your first open-source contribution! 🎉
 
@@ -146,8 +148,8 @@ Once a maintainer approves, your PR will be merged. Congratulations on your firs
 ## ⚠️ 提交前请注意 / Before You Submit
 
 1. **压缩图片** — 确保每张图片小于 1MB。可以使用 [TinyPNG](https://tinypng.com/) 等在线工具压缩。
-2. **移除高敏感 EXIF 信息** — 最重要的是删除 **GPS 坐标**，它能精确暴露你的拍摄地点。照片还可能携带地址、联系方式等信息。详见 [EXIF.md](EXIF.md) 和 [CONTRIBUTING.md](CONTRIBUTING.md)。
-3. **正确命名文件夹** — 使用你的 GitHub ID 命名，并放在对应首字母目录下。
+2. **移除高敏感 EXIF 信息** — 最重要的是删除 **GPS 坐标**，它能精确暴露你的拍摄地点。照片还可能携带地址、联系方式等信息。详见 [EXIF 字段说明](EXIF.md) 和 [贡献指南中的清理方法](CONTRIBUTING.md)。
+3. **正确命名文件夹** — 使用有意义的文件夹名（无需与 GitHub ID 相同），并按其首字符放在对应的 `A-Z/#` 目录下。
 4. **原创图片** — 只提交你自己的照片，不接受盗图。
 5. **只修改自己的文件夹** — 请不要改动他人的文件夹或其他项目文件，避免给维护者带来不必要的麻烦。
 6. **文件名避免中文和空格** — 文件名中的中文字符或空格可能导致部分系统无法正常显示或下载，请尽量使用英文字母、数字和连字符。
@@ -155,8 +157,8 @@ Once a maintainer approves, your PR will be merged. Congratulations on your firs
 ---
 
 1. **Compress images** — Make sure each image is under 1MB. Use tools like [TinyPNG](https://tinypng.com/).
-2. **Remove sensitive EXIF data** — The most important thing is to strip **GPS coordinates**, which can reveal your exact shooting location. Photos may also carry address and contact-info fields. See [EXIF.md](EXIF.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
-3. **Name your folder correctly** — Use your GitHub ID and place it under the matching alphabetical directory.
+2. **Remove sensitive EXIF data** — The most important thing is to strip **GPS coordinates**, which can reveal your exact shooting location. Photos may also carry address and contact-info fields. See the [EXIF field guide](EXIF.md) and the [removal methods in the contribution guide](CONTRIBUTING.md).
+3. **Name your folder correctly** — Use a meaningful name (it does not have to match your GitHub ID) and place it under the matching `A-Z/#` directory for its first character.
 4. **Original images only** — Only submit your own photos. Stolen images are not accepted.
 5. **Only modify your own folder** — Do not touch other contributors' folders or any other project files.
 6. **Avoid Chinese characters and spaces in filenames** — Use letters, numbers, and hyphens only to ensure compatibility across all systems.
