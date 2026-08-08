@@ -100,7 +100,7 @@ git push origin main
 
 1. 回到你 Fork 的仓库页面
 2. 你会看到一个提示 **"This branch is X commits ahead"**，点击 **Contribute** → **Open pull request**
-3. 选择正确的 PR 模板（提交照片请选 **图片提交**；改 CI、文档或其他内容请选对应模板）
+3. 默认已是 **图片提交** 模板。若改的是 CI / 文档 / 其他，请用模板底部的链接切换
 4. **自行勾选**模板中的全部自查项；请勿删除模板顶部的 `pr-type` 标记和清单
 5. 点击 **Create pull request**
 
@@ -108,7 +108,7 @@ git push origin main
 
 1. Go back to your forked repository page
 2. You should see a prompt saying **"This branch is X commits ahead"** — click **Contribute** → **Open pull request**
-3. Choose the correct PR template (**Photo submission** for photos; use CI / docs / others when that matches your change)
+3. The default template is **Photo submission**. For CI / docs / other changes, use the links at the bottom of the template to switch
 4. **Check every checklist item yourself.** Do not remove the `pr-type` tag or the checklist from the template
 5. Click **Create pull request**
 
