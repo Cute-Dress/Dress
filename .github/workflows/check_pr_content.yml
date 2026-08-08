@@ -1,0 +1,247 @@
+# Check PR Content
+#
+# 综合检查 PR 描述与变更内容.
+#
+# 检查 pr-type (PR body 中的 <!-- pr-type: xxx -->):
+#   - 缺省无标签 -> 当作 images
+#   - 所有类型   -> 自查清单须存在且全部勾选
+#   - images     -> 须有图片变更; 目录须符合 A-Z/#/昵称/
+#   - ci_wf      -> 变更须均在 .github/ 下
+#   - docs/others -> 仅清单检查
+#
+# 任一项不通过: 评论 + fail
+#
+# 脚本内重要常量:
+#   IMAGE_EXT        与 size/exif 对齐的图片后缀
+#   ACTIVE_STATUSES  只检查 added / modified / renamed / copied
+#   PR_TYPE_RE       解析 pr-type 标签
+#   ROOT_EXEMPTIONS  目录检查时跳过的仓库根文件
+#
+name: Check PR Content
+
+on:
+  pull_request_target:
+    # edited: 勾选清单等只改 body 时也要重跑 (size/exif 不需要听 edited)
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  check-content:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR content
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const IMAGE_EXT = /\.(jpe?g|jfif|png|webp|tiff?|hei[cf]|avif|gif|bmp)$/i;
+            const ACTIVE_STATUSES = new Set(['added', 'modified', 'renamed', 'copied']);
+            const PR_TYPE_RE = /<!--\s*pr-type:\s*(\S+)\s*-->/;
+            const CHECKBOX_RE = /^\s*-\s*\[([ xX])\]\s*(.*)$/;
+            const ROOT_EXEMPTIONS = new Set([
+              '.gitattributes',
+              '.gitignore',
+              'CONTRIBUTING.md',
+              'EXIF.md',
+              'GUIDE.md',
+              'LICENSE',
+              'README.md',
+              'README_DETAIL.md',
+            ]);
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.setFailed('Missing pull_request payload.');
+              return;
+            }
+
+            const prNumber = pr.number;
+            const body = pr.body || '';
+            const typeMatch = body.match(PR_TYPE_RE);
+            const prTypeMissing = !typeMatch;
+            const prType = typeMatch ? typeMatch[1] : 'images';
+
+            async function listChangedFiles() {
+              const files = [];
+              let page = 1;
+              while (true) {
+                const compare = await github.rest.repos.compareCommitsWithBasehead({
+                  owner,
+                  repo,
+                  basehead: `${pr.base.sha}...${pr.head.sha}`,
+                  per_page: 100,
+                  page,
+                });
+                const pageFiles = compare.data.files || [];
+                if (pageFiles.length === 0) break;
+                files.push(...pageFiles);
+                if (pageFiles.length < 100) break;
+                page++;
+              }
+              return files;
+            }
+
+            function expectedBucket(folderName) {
+              const first = folderName.trim().charAt(0);
+              return /^[A-Za-z]$/.test(first) ? first.toUpperCase() : '#';
+            }
+
+            function checkFolderPlacement(changedFiles) {
+              const invalid = [];
+              for (const fileInfo of changedFiles) {
+                if (!ACTIVE_STATUSES.has(fileInfo.status)) continue;
+
+                const file = fileInfo.filename.replace(/\\/g, '/');
+                const parts = file.split('/').filter(Boolean);
+                if (parts[0] === '.github') continue;
+                if (parts.length === 1 && ROOT_EXEMPTIONS.has(parts[0])) continue;
+
+                if (parts.length < 3) {
+                  invalid.push(`- ${file}（文件应位于 A-Z/# 下的个人文件夹内）`);
+                  continue;
+                }
+
+                const actualBucket = parts[0];
+                const contributorFolder = parts[1];
+                const expected = expectedBucket(contributorFolder);
+                if (actualBucket !== expected) {
+                  invalid.push(`- ${file}（应位于 ${expected}/${contributorFolder}/...）`);
+                }
+              }
+              return invalid;
+            }
+
+            function scanCheckboxes(text) {
+              const unchecked = [];
+              let total = 0;
+              for (const line of text.split('\n')) {
+                const m = line.match(CHECKBOX_RE);
+                if (!m) continue;
+                total++;
+                if (m[1] === ' ') {
+                  const label = (m[2] || '').trim() || '(untitled item)';
+                  unchecked.push(`- ${label}`);
+                }
+              }
+              return { total, unchecked };
+            }
+
+            const sections = [];
+            let failed = false;
+
+            // 1) Checklist completeness (all pr-types)
+            const { total: checkboxTotal, unchecked } = scanCheckboxes(body);
+            if (checkboxTotal === 0) {
+              failed = true;
+              sections.push([
+                '我们未在 PR 描述中找到自查清单 (checkbox), 请使用仓库提供的 Pull Request 模板, 勿删除清单项:',
+                'We could not find any checklist checkboxes in the PR body. Please use the repository Pull Request template and do not remove the checklist items.',
+              ].join('\n'));
+            } else if (unchecked.length > 0) {
+              failed = true;
+              sections.push([
+                '我们注意到 PR 模板中的自查清单尚未全部勾选, 请确认并勾选后再次提交:',
+                'We noticed that the PR template checklist is incomplete. Please check all items and update the PR:',
+                '',
+                ...unchecked,
+              ].join('\n'));
+            }
+
+            const changedFiles = await listChangedFiles();
+
+            if (prType === 'images') {
+              const images = changedFiles.filter(file =>
+                ACTIVE_STATUSES.has(file.status) && IMAGE_EXT.test(file.filename)
+              );
+
+              // 2) Must have image changes
+              if (images.length === 0) {
+                failed = true;
+                if (prTypeMissing) {
+                  sections.push([
+                    'PR 描述中未找到 pr-type 标签, 已按图片提交 (images) 处理; 但未检测到任何图片文件变更.',
+                    'No pr-type tag was found in the PR body, so it was treated as an image submission (images); no changed image files were detected.',
+                    '',
+                    '若本次不是提交照片, 请关闭后改用正确的 PR 模板 (CI / 文档 / 其他).',
+                    'If this PR is not for photos, please close it and reopen with the correct template (CI / docs / others).',
+                    '',
+                    '若确为图片提交, 请将图片放入对应目录后再 push.',
+                    'If this is a photo submission, please add images under the proper folders and push again.',
+                  ].join('\n'));
+                } else {
+                  sections.push([
+                    '当前 PR 类型为图片提交 (pr-type: images), 但未检测到任何图片文件变更.',
+                    'This PR is typed as an image submission (pr-type: images), but no changed image files were detected.',
+                    '',
+                    '若本次不是提交照片, 请关闭后改用正确的 PR 模板 (CI / 文档 / 其他).',
+                    'If this PR is not for photos, please close it and reopen with the correct template (CI / docs / others).',
+                    '',
+                    '若确为图片提交, 请将图片放入对应目录后再 push.',
+                    'If this is a photo submission, please add images under the proper folders and push again.',
+                  ].join('\n'));
+                }
+              }
+
+              // 3) Folder placement
+              const invalidFolders = checkFolderPlacement(changedFiles);
+              if (invalidFolders.length > 0) {
+                failed = true;
+                sections.push([
+                  '我们注意到以下文件的目录归类不正确, 请调整路径后再次推送:',
+                  'We noticed that the following files are not under the correct A-Z/# folder. Please fix the paths and push again:',
+                  '',
+                  ...invalidFolders,
+                  '',
+                  '正确示例 / Examples:',
+                  '- M/moe/photo.jpg',
+                  '- #/233/photo.jpg',
+                ].join('\n'));
+              }
+            } else if (prType === 'ci_wf') {
+              // 4) CI changes must stay under .github/
+              const outside = changedFiles
+                .filter(file => ACTIVE_STATUSES.has(file.status))
+                .map(file => file.filename.replace(/\\/g, '/'))
+                .filter(file => !file.startsWith('.github/') && file !== '.github');
+
+              if (outside.length > 0) {
+                failed = true;
+                sections.push([
+                  '当前 PR 类型为 CI / 工作流修改 (pr-type: ci_wf), 但检测到 `.github/` 目录之外的文件变更:',
+                  'This PR is typed as a CI / workflow change (pr-type: ci_wf), but files outside `.github/` were changed:',
+                  '',
+                  ...outside.map(f => `- ${f}`),
+                  '',
+                  '请将非 CI 改动拆到其他 PR, 或改用对应模板 (图片 / 文档 / 其他).',
+                  'Please split non-CI changes into another PR, or switch to the matching template (images / docs / others).',
+                ].join('\n'));
+              }
+            } else if (prType === 'docs' || prType === 'others') {
+              core.info(`pr-type is "${prType}", only checklist rules apply.`);
+            } else {
+              failed = true;
+              sections.push([
+                `未识别的 pr-type: "${prType}". 请使用模板中的 images / ci_wf / docs / others.`,
+                `Unrecognized pr-type: "${prType}". Please use images / ci_wf / docs / others from the templates.`,
+              ].join('\n'));
+            }
+
+            if (sections.length > 0) {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: sections.join('\n\n---\n\n'),
+              });
+            }
+
+            if (failed) {
+              core.setFailed('PR content check failed.');
+            } else {
+              core.info('PR content check passed.');
+            }
