@@ -116,10 +116,11 @@ jobs:
               return invalid;
             }
 
-            function scanCheckboxes(text) {
+            function scanChecklist(text) {
               const unchecked = [];
               let total = 0;
-              for (const line of text.split('\n')) {
+              // GitHub PR body 使用 CRLF; 必须按 \r?\n 拆行, 否则行尾 \r 会导致匹配失败
+              for (const line of text.split(/\r?\n/)) {
                 const m = line.match(CHECKBOX_RE);
                 if (!m) continue;
                 total++;
@@ -134,13 +135,13 @@ jobs:
             const sections = [];
             let failed = false;
 
-            // 1) Checklist completeness (all pr-types)
-            const { total: checkboxTotal, unchecked } = scanCheckboxes(body);
-            if (checkboxTotal === 0) {
+            // 1) 自查清单完整性 (所有 pr-type)
+            const { total: checklistTotal, unchecked } = scanChecklist(body);
+            if (checklistTotal === 0) {
               failed = true;
               sections.push([
-                '我们未在 PR 描述中找到自查清单 (checkbox), 请使用仓库提供的 Pull Request 模板, 勿删除清单项:',
-                'We could not find any checklist checkboxes in the PR body. Please use the repository Pull Request template and do not remove the checklist items.',
+                '我们未在 PR 描述中找到自查清单, 请使用仓库提供的 Pull Request 模板, 勿删除清单项:',
+                'We could not find a checklist in the PR body. Please use the repository Pull Request template and do not remove the checklist items.',
               ].join('\n'));
             } else if (unchecked.length > 0) {
               failed = true;
