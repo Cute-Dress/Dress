@@ -100,48 +100,54 @@ git push origin main
 
 1. 回到你 Fork 的仓库页面
 2. 你会看到一个提示 **"This branch is X commits ahead"**，点击 **Contribute** → **Open pull request**
-3. 建议自行确认并勾选 PR 模板中的全部项目；若前三项未勾选，机器人会在自动检查通过后补充勾选，原创声明必须由你手动确认
-4. 点击 **Create pull request**
+3. 选择正确的 PR 模板（提交照片请选 **图片提交**；改 CI、文档或其他内容请选对应模板）
+4. **自行勾选**模板中的全部自查项；请勿删除模板顶部的 `pr-type` 标记和清单
+5. 点击 **Create pull request**
 
 ---
 
 1. Go back to your forked repository page
 2. You should see a prompt saying **"This branch is X commits ahead"** — click **Contribute** → **Open pull request**
-3. Review and check every item in the PR template yourself. If the first three items are left unchecked, the bot fills them in after their automated checks pass; you must always confirm the originality declaration manually
-4. Click **Create pull request**
+3. Choose the correct PR template (**Photo submission** for photos; use CI / docs / others when that matches your change)
+4. **Check every checklist item yourself.** Do not remove the `pr-type` tag or the checklist from the template
+5. Click **Create pull request**
 
 ---
 
 ## 第四步：等待审核 / Step 4: Wait for Review
 
-提交 PR 后，自动化机器人会帮你检查：
+提交照片类 PR 后，自动化会检查：
 
+- 📋 **PR 内容检查**：自查清单是否齐全并全部勾选、是否包含图片变更、文件是否位于对应的 `A-Z/#/昵称/` 目录下
 - 📏 **文件大小检查**：图片是否在 1MB 以内
 - 🔒 **EXIF 信息检查**：图片是否包含高敏感元数据（主要是 **GPS 坐标**及地址类字段）
-- 📂 **目录归类检查**：个人文件夹是否位于与其首字符对应的 `A-Z/#` 目录下
 
-> 机器人只会拦截高敏感字段（例如 GPS 坐标、IPTC/XMP 地址信息），普通摄影参数（光圈、快门等）不会导致 PR 被拒。
+> EXIF 检查只会拦截高敏感字段（例如 GPS 坐标、IPTC/XMP 地址信息），普通摄影参数（光圈、快门等）不会导致检查失败。
 > 了解详情请阅读 [EXIF.md](EXIF.md)。
 
-建议你先自行确认并勾选清单。若大小、EXIF 或目录项未勾选，机器人只会在对应检查通过后补充勾选；原创声明始终需要你手动确认。如果检查未通过，机器人会留下评论告诉你如何修正。你可以按照提示修改后再次推送（push），PR 会自动更新。
+检查未通过时，PR 下会留下评论说明原因。按提示修改后 **push**，或勾选清单后保存 PR 描述，检查会自动重跑。
 
-维护者审核通过后，你的 PR 就会被合并。恭喜你完成了第一次开源贡献！🎉
+若大小或 EXIF 未通过，PR 作者或维护者可在评论区发送 `/auto-fix` 尝试自动处理。该命令会将图片压缩到 1MB 以内，并去除**全部** EXIF（比检查更彻底）。若你不希望文件被改动，请自行处理好后再推送。
+
+维护者人工审核通过后，你的 PR 就会被合并。恭喜你完成了一次开源贡献！🎉
 
 ---
 
-After submitting the PR, automated bots will check:
+After a photo submission PR is opened, automation will check:
 
+- 📋 **PR content check**: Is the checklist present and fully checked? Are there image changes? Are files under the matching `A-Z/#/name/` folder?
 - 📏 **File size check**: Are images under 1MB?
-- 🔒 **EXIF data check**: Do images contain high-sensitivity metadata (primarily **GPS coordinates** and address fields)
-- 📂 **Folder placement check**: Is the contributor folder under the matching `A-Z/#` directory for its first character?
+- 🔒 **EXIF data check**: Do images contain high-sensitivity metadata (primarily **GPS coordinates** and address fields)?
 
-> The bot only blocks high-sensitivity fields such as GPS coordinates and IPTC/XMP location data.
-> Regular photography parameters (aperture, shutter speed, etc.) will not cause your PR to fail.
+> The EXIF check only blocks high-sensitivity fields such as GPS coordinates and IPTC/XMP location data.
+> Regular photography parameters (aperture, shutter speed, etc.) will not cause the check to fail.
 > See [EXIF.md](EXIF.md) for details.
 
-You should review and check the checklist yourself first. If the size, EXIF, or folder item is left unchecked, the bot fills it in only after the corresponding check passes. You must always confirm the originality declaration manually. If any check fails, the bot will leave a comment explaining how to fix it. You can make changes and push again — the PR will update automatically.
+If a check fails, a comment on the PR will explain why. Fix the files and **push**, or tick the checklist and save the PR description — checks will re-run automatically.
 
-Once a maintainer approves, your PR will be merged. Congratulations on your first open-source contribution! 🎉
+If size or EXIF checks fail, the PR author or a maintainer can comment `/auto-fix` to try an automatic fix. That command compresses images to under 1MB and strips **all** EXIF (more thorough than the EXIF check). If you do not want your files modified, fix them yourself and push again.
+
+Once a maintainer approves, your PR will be merged. Congratulations on completing an open-source contribution! 🎉
 
 ---
 
