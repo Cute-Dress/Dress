@@ -49,7 +49,7 @@ jobs:
               'GUIDE.md',
               'LICENSE',
               'README.md',
-              'README_DETAIL.md',
+              'Q&A.md',
             ]);
 
             const owner = context.repo.owner;
