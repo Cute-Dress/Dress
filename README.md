@@ -1,8 +1,8 @@
 ## Dress - 面向可爱的蓝孩子 (/ω＼) 的 git 学习实践项目 on GitHub
 
-**Dress - A Study and Practice project of git.**
+[English](en_US/README.md)
 
-> ***If you are feeling puzzled and weird about the project, please read [README DETAIL](README_DETAIL.md)***
+> ***如果您对项目感到困惑或觉得奇怪，请阅读 [Q&A](Q&A.md)***
 
 [![Contributors](https://img.shields.io/github/contributors/Cute-Dress/Dress.svg)](https://github.com/Cute-Dress/Dress/graphs/contributors)
 ![GitHub repo size in bytes](https://img.shields.io/github/repo-size/Cute-Dress/Dress.svg)
@@ -10,32 +10,20 @@
 
 项目很简单且并不要求你贡献代码，没有编程技能都可以参加。你可以从这里学习从克隆项目，创建分支，提交和同步修改，到合并分支请求的整套流程，一次即可熟悉 Git/GitHub 的使用。
 
-This simple repository requires no contribution of code, so that you can participate in it without having any coding skills. This project helps you to learn the whole process of cloning a repository, creating a branch, pushing and pulling commits, and making a pull request, thus you can have a good knowledge of Git/GitHub's usage.
-
 **当然，你还要事先准备至少一张你的女装照。**
 
-**Of course, you need to prepare a photo of you dressed in women's clothing first.**
-
-### 文件夹命名规则和文件标准 / File and Folder Naming Rules and Filetype Standards
+### 文件夹命名规则和文件标准
 
 - 不接受盗图和未授权转载他人图片
-- Stolen pictures and unauthorized photos of other people are not accepted
 - 请尽量使用有意义的文件夹名字
-- Please attempt to use meaningful folder names
 - 可使用你的 GitHub ID 或者其他社交平台上非中文的 ID 来命名文件夹
-- Use your GitHub ID or roman character social media IDs as folder names
 - 文件夹按照首字母归类
-- Folders are organized alphabetically
 - 尽量不要在文件夹名字中出现空格
-- Please try to avoid spaces in folder names
 - 影响排序的文件夹命名 (例如 ```AAAA.Folder```, ```0.Folder```, ```111Folder```) 会被 Close Pull Request
-- Pull requests with folder names that attempt to influence ordering (ex: ```AAAA.Folder```, ```0.Folder```, ```111Folder```)will be closed
 - 如果需要在你的文件夹内创建描述文件,请尽量使用 [Markdown](https://en.wikipedia.org/wiki/Markdown) 语法来编写
-- If you need to add a descriptive file in your folder, please compose it using [Markdown](https://en.wikipedia.org/wiki/Markdown).
 - 图片请尽量压缩大小（1 MB 以下），并按 [EXIF 字段说明](EXIF.md) 移除高敏感信息（清理方法见 [贡献指南](CONTRIBUTING.md)），图片质量过低的 Pull Request 会被 Close
-- Please attempt to compress your images (less than 1 MB) and remove high-sensitivity metadata listed in the [EXIF field guide](EXIF.md) using the [removal methods](CONTRIBUTING.md); pull requests with excessively large image files will be closed
 
-## Star 历史 / Star History
+## Star 历史
 
 <a href="https://www.star-history.com/?repos=Cute-Dress%2FDress&type=date&legend=top-left">
  <picture>
@@ -45,7 +33,7 @@ This simple repository requires no contribution of code, so that you can partici
  </picture>
 </a>
 
-### 在线预览 / Online Demo
+### 在线预览
 
 - <https://picw.4everland.app/images?name=Cute-Dress&repository=Dress&directory=/> by [@Flysky12138](https://github.com/Flysky12138)
 
@@ -59,24 +47,22 @@ This simple repository requires no contribution of code, so that you can partici
 
 </details>
 
-### 贡献者 / Contributors
+### 贡献者
 
 [![contributors](https://contrib.rocks/image?repo=Cute-Dress/Dress&max=999&columns=20)](https://github.com/Cute-Dress/Dress/graphs/contributors)
 
-### 许可 / License
+### 许可
 
 本项目采用知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议进行许可。
 
-This repository is licensed under a Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+### 贡献准备
 
-### 贡献 / Contributing
+请仔细阅读[贡献准备](CONTRIBUTING.md)
 
-请仔细阅读[CONTRIBUTING.md](CONTRIBUTING.md)
+### 新手指南
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) carefully.
+第一次参与？请阅读 [新手指南](GUIDE.md)，了解完整的 Fork → 提交 → PR 流程。
 
-### 新手指南 / Beginner Guide
+### Q&A
 
-第一次参与？请阅读 [新手指南 / Beginner Guide](GUIDE.md)，了解完整的 Fork → 提交 → PR 流程。
-
-First time contributing? Read the [Beginner Guide](GUIDE.md) for a step-by-step walkthrough of the Fork → Commit → PR workflow.
+请阅读[Q&A](Q&A.md)
