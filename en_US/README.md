@@ -1,6 +1,6 @@
 ## Dress - A Study and Practice project of git.
 
-[简体中文](./README.md)
+[简体中文](../README.md)
 
 > ***If you are feeling puzzled and weird about the project, please read [Q&A](Q&A.md)***
 
