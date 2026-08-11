@@ -21,7 +21,7 @@
 - 尽量不要在文件夹名字中出现空格
 - 影响排序的文件夹命名 (例如 ```AAAA.Folder```, ```0.Folder```, ```111Folder```) 会被 Close Pull Request
 - 如果需要在你的文件夹内创建描述文件,请尽量使用 [Markdown](https://en.wikipedia.org/wiki/Markdown) 语法来编写
-- 图片请尽量压缩大小（1 MB 以下），并按 [EXIF 字段说明](EXIF.md) 移除高敏感信息（清理方法见 [贡献指南](CONTRIBUTING.md)），图片质量过低的 Pull Request 会被 Close
+- 图片请尽量压缩大小（1 MB 以下），并按 [EXIF 字段说明](EXIF.md) 移除高敏感信息（清理方法见 [贡献准备](CONTRIBUTING.md)），图片质量过低的 Pull Request 会被 Close
 
 ## Star 历史
 
@@ -35,17 +35,9 @@
 
 ### 在线预览
 
-- <https://picw.4everland.app/images?name=Cute-Dress&repository=Dress&directory=/> by [@Flysky12138](https://github.com/Flysky12138)
+- [API](https://dress.iszako.top/)
 
-<details><summary>旧 Dress 项目</summary>
-
-- [https://drsrel.github.io/](https://drsrel.github.io/)
-
-- [http://satori.mycard.moe/](http://satori.mycard.moe/)
-
-- [https://www.yoooooooooo.com/gitdress/](https://www.yoooooooooo.com/gitdress/)
-
-</details>
+- [旧 Dress 项目](https://drsrel.github.io/)
 
 ### 贡献者
 
@@ -62,7 +54,3 @@
 ### 新手指南
 
 第一次参与？请阅读 [新手指南](GUIDE.md)，了解完整的 Fork → 提交 → PR 流程。
-
-### Q&A
-
-请阅读[Q&A](Q&A.md)

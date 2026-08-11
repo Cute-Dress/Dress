@@ -1,5 +1,7 @@
 ## Dress - A Study and Practice project of git.
 
+[简体中文](../README.md)
+
 > ***If you are feeling puzzled and weird about the project, please read [Q&A](Q&A.md)***
 
 [![Contributors](https://img.shields.io/github/contributors/Cute-Dress/Dress.svg)](https://github.com/Cute-Dress/Dress/graphs/contributors)
@@ -33,17 +35,9 @@ This simple repository requires no contribution of code, so that you can partici
 
 ### Online Demo
 
-- <https://picw.4everland.app/images?name=Cute-Dress&repository=Dress&directory=/> by [@Flysky12138](https://github.com/Flysky12138)
+- [API](https://dress.iszako.top/)
 
-<details><summary>Old Dress</summary>
-
-- [https://drsrel.github.io/](https://drsrel.github.io/)
-
-- [http://satori.mycard.moe/](http://satori.mycard.moe/)
-
-- [https://www.yoooooooooo.com/gitdress/](https://www.yoooooooooo.com/gitdress/)
-
-</details>
+- [Old Dress](https://drsrel.github.io/)
 
 ### Contributors
 
@@ -60,7 +54,3 @@ Please read [Contribution Preparation](CONTRIBUTING.md) carefully.
 ### Beginner Guide
 
 First time contributing? Read the [Beginner Guide](GUIDE.md) for a step-by-step walkthrough of the Fork → Commit → PR workflow.
-
-### Q&A
-
-Plese read [Q&A](Q&A.md)
