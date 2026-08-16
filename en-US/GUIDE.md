@@ -45,14 +45,27 @@ Fork repo → Add your photos → Commit → Open Pull Request → Wait for revi
 > **Push** = Uploading your local commits back to the remote repository (your Fork).
 
 ```bash
-# 1. Partially clone your fork
-#    Download only the latest commit and directory structure; photos are fetched on demand
+# 1. Clone your fork
+# The repository has a long commit history, so --depth 1 fetches only the latest commit
+git clone --depth 1 https://github.com/<Your username>/Dress.git
+cd Dress
+```
+
+If the repository's images make a regular clone too slow, use a partial clone instead of the commands above to download only your directory:
+
+```bash
 git clone --filter=blob:none --sparse --depth 1 https://github.com/<Your username>/Dress.git
 cd Dress
-
-# 2. Check out only your directory, then create it and add photos
-#    Quote the path; use the # directory for a name starting with a number or symbol
 git sparse-checkout set '<FirstLetter>/<YourFolderName>'
+```
+
+A partial clone works with normal commits and pull requests. See the [Partial Clone Guide](PARTIAL_CLONE.md) to manage directories, fetch complete history, or restore the full repository.
+
+After cloning, create your folder and add photos:
+
+```bash
+# 2. Create your folder and add photos
+# <FirstLetter> must match the first character of <YourFolderName>; use # for a number or symbol
 mkdir -p <FirstLetter>/<YourFolderName>
 cp /path/to/your/photos/* <FirstLetter>/<YourFolderName>/
 
@@ -63,8 +76,6 @@ git commit -m "Add photos for <YourFolderName>"
 # 4. Push to your fork
 git push origin main
 ```
-
-A partial clone works with normal commits and pull requests, but it does not download other contributors' photos by default. See the [Partial Clone Guide](PARTIAL_CLONE.md) to manage directories, fetch complete history, or restore the full repository.
 
 ---
 
