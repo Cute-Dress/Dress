@@ -54,3 +54,5 @@ Please read [Contribution Preparation](CONTRIBUTING.md) carefully.
 ### Beginner Guide
 
 First time contributing? Read the [Beginner Guide](GUIDE.md) for a step-by-step walkthrough of the Fork → Commit → PR workflow.
+
+When contributing with the Git CLI, read the [Partial Clone Guide](PARTIAL_CLONE.md) to download only the directory you need and reduce network transfer and disk usage.

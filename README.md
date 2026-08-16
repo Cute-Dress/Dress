@@ -1,6 +1,6 @@
 ## Dress - 面向可爱的蓝孩子 (/ω＼) 的 git 学习实践项目 on GitHub
 
-[English](en_US/README.md)
+[English](en-US/README.md)
 
 > ***如果您对项目感到困惑或觉得奇怪，请阅读 [Q&A](Q&A.md)***
 
@@ -54,3 +54,5 @@
 ### 新手指南
 
 第一次参与？请阅读 [新手指南](GUIDE.md)，了解完整的 Fork → 提交 → PR 流程。
+
+使用 Git 命令行参与时，推荐阅读[部分克隆指南](PARTIAL_CLONE.md)，只下载需要修改的目录以减少下载量和磁盘占用。
