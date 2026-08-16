@@ -45,14 +45,14 @@ Fork repo → Add your photos → Commit → Open Pull Request → Wait for revi
 > **Push** = Uploading your local commits back to the remote repository (your Fork).
 
 ```bash
-# 1. Clone your forked repository
-# 💡 The repo has a large commit history, so a full clone may be slow.
-#    Consider using --depth 1 to only fetch the latest commit for a faster download!
-git clone --depth 1 https://github.com/<Your username>/Dress.git
+# 1. Partially clone your fork
+#    Download only the latest commit and directory structure; photos are fetched on demand
+git clone --filter=blob:none --sparse --depth 1 https://github.com/<Your username>/Dress.git
 cd Dress
 
-# 2. Create your folder and add photos
-#    <FirstLetter> must match the first character of <YourFolderName>; use # for a number or symbol
+# 2. Check out only your directory, then create it and add photos
+#    Quote the path; use the # directory for a name starting with a number or symbol
+git sparse-checkout set '<FirstLetter>/<YourFolderName>'
 mkdir -p <FirstLetter>/<YourFolderName>
 cp /path/to/your/photos/* <FirstLetter>/<YourFolderName>/
 
@@ -63,6 +63,8 @@ git commit -m "Add photos for <YourFolderName>"
 # 4. Push to your fork
 git push origin main
 ```
+
+A partial clone works with normal commits and pull requests, but it does not download other contributors' photos by default. See the [Partial Clone Guide](PARTIAL_CLONE.md) to manage directories, fetch complete history, or restore the full repository.
 
 ---
 
