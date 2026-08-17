@@ -47,13 +47,26 @@ Fork 仓库 → 添加你的照片 → 提交 Commit → 发起 Pull Request →
 
 ```bash
 # 1. 克隆你 Fork 的仓库
-# 💡 由于仓库 commit 历史较多，直接 clone 可能较慢。
-#    推荐使用 --depth 1 仅拉取最近一次提交，速度更快喵！
+# 由于仓库 commit 历史较多，使用 --depth 1 仅拉取最近一次提交
 git clone --depth 1 https://github.com/<你的用户名>/Dress.git
 cd Dress
+```
 
+如果你觉得仓库图片较多、普通克隆太慢，可以使用部分克隆代替上面的命令，只下载自己的目录：
+
+```bash
+git clone --filter=blob:none --sparse --depth 1 https://github.com/<你的用户名>/Dress.git
+cd Dress
+git sparse-checkout set '<首字母>/<你的文件夹名>'
+```
+
+部分克隆不会影响正常提交和 PR。目录管理、完整历史和恢复完整仓库的方法请阅读[部分克隆指南](PARTIAL_CLONE.md)。
+
+克隆完成后，创建你的文件夹并添加照片：
+
+```bash
 # 2. 创建你的文件夹并添加照片
-#    <首字母> 应与 <你的文件夹名> 的首字符对应；数字或符号开头时使用 #
+# <首字母> 应与 <你的文件夹名> 的首字符对应；数字或符号开头时使用 #
 mkdir -p <首字母>/<你的文件夹名>
 cp /path/to/your/photos/* <首字母>/<你的文件夹名>/
 
