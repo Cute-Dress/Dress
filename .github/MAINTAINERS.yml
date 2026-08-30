@@ -1,0 +1,7 @@
+# 维护者名单 / Maintainers
+#
+# 想要在 PR 多次未通过检查时收到通知的维护者, 把自己加进这个列表即可.
+# 不想收通知的可以不添加 (仓库订阅仍会收到普通提醒).
+# Add yourself if you want to be notified when a PR keeps failing the content check.
+maintainers:
+  - Yueosa
