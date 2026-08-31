@@ -10,6 +10,11 @@
 #   - docs/others -> 仅清单检查
 #
 # 任一项不通过: 评论 + fail
+#   评论计数: 每条 check 失败评论带 <!-- check-pr-content --> marker
+#   计数达到 3 后不再发 check 评论, 改为 @ 维护者 (MAINTAINERS.yml) 通知, 带 <!-- maintainer-notify --> marker
+#   通知只发一次; 之后完全静默 (检查照跑, 不发任何评论)
+#   并发: concurrency 排队 (不 cancel); 同一 PR 的连续事件只保留最后一个完整运行,
+#         中间状态被跳过, 最终检查基于最新 body
 #
 # 脚本内重要常量:
 #   IMAGE_EXT        与 size/exif 对齐的图片后缀
@@ -21,13 +26,20 @@ name: Check PR Content
 
 on:
   pull_request_target:
-    # edited: 勾选清单等只改 body 时也要重跑 (size/exif 不需要听 edited)
+    # edited: 只改 body 时勾选清单要重跑, 但连续 edited 会并发刷评论;
+    # 由 concurrency 排队兜底 (只保留最后一个完整运行), 见下.
     types: [opened, synchronize, reopened, edited]
 
 permissions:
   contents: read
   pull-requests: write
   issues: write
+
+concurrency:
+  # 排队模式 (不 cancel): 连续 edited 只保留最后一次完整运行.
+  # 中间状态被跳过是特性; 最终检查保证基于最新 body.
+  group: pr-content-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
 
 jobs:
   check-content:
@@ -51,6 +63,12 @@ jobs:
               'README.md',
               'Q&A.md',
             ]);
+
+            // 评论计数与维护者通知
+            const CHECK_COMMENT_MARKER = '<!-- check-pr-content -->';
+            const NOTIFY_MARKER = '<!-- maintainer-notify -->';
+            // 允许发 3 条 check 评论; 第 4 次失败起不再发 check 评论, 改为通知维护者
+            const MAX_CHECK_COMMENTS = 3;
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
@@ -130,6 +148,46 @@ jobs:
                 }
               }
               return { total, unchecked };
+            }
+
+            // 读取 .github/MAINTAINERS.yml 维护者名单
+            async function readMaintainers() {
+              try {
+                const { data } = await github.rest.repos.getContent({
+                  owner,
+                  repo,
+                  path: '.github/MAINTAINERS.yml',
+                });
+                const text = Buffer.from(data.content, 'base64').toString('utf-8');
+                const list = [];
+                for (const line of text.split(/\r?\n/)) {
+                  const m = line.match(/^\s*-\s+@?([A-Za-z0-9-]+)\s*$/);
+                  if (m) list.push(m[1]);
+                }
+                return list;
+              } catch (e) {
+                core.warning(`Cannot read MAINTAINERS.yml: ${e.message}`);
+                return [];
+              }
+            }
+
+            // 统计该 PR 上带指定 marker 的评论条数
+            async function countMarkedComments(marker) {
+              const comments = [];
+              let page = 1;
+              while (true) {
+                const resp = await github.rest.issues.listComments({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  per_page: 100,
+                  page,
+                });
+                comments.push(...resp.data);
+                if (resp.data.length < 100) break;
+                page++;
+              }
+              return comments.filter(c => c.body && c.body.includes(marker)).length;
             }
 
             const sections = [];
@@ -233,12 +291,48 @@ jobs:
             }
 
             if (sections.length > 0) {
-              await github.rest.issues.createComment({
-                owner,
-                repo,
-                issue_number: prNumber,
-                body: sections.join('\n\n---\n\n'),
-              });
+              const checkCount = await countMarkedComments(CHECK_COMMENT_MARKER);
+              const notified = await countMarkedComments(NOTIFY_MARKER);
+              core.info(`check comments: ${checkCount}/${MAX_CHECK_COMMENTS}, notified: ${notified > 0}`);
+
+              if (notified > 0) {
+                // 已通知过维护者: 完全静默, 检查照跑但不发任何评论
+                core.info('Maintainer already notified. Silent mode: no further comments.');
+              } else if (checkCount < MAX_CHECK_COMMENTS) {
+                // 仍有余量: 发一条带 marker 的 check 评论 (历史保留, 可复现)
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body: [
+                    sections.join('\n\n---\n\n'),
+                    '',
+                    CHECK_COMMENT_MARKER,
+                  ].join('\n'),
+                });
+              } else {
+                // 已达上限: 不再发 check 评论, 改为通知维护者 (只发一次)
+                const maintainers = await readMaintainers();
+                const mentions = maintainers.length
+                  ? maintainers.map(m => `@${m}`).join(' ')
+                  : '(MAINTAINERS.yml 中暂无维护者)';
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body: [
+                    '该 PR 已连续多次未通过内容检查, 请维护者人工处理:',
+                    'This PR has repeatedly failed the content check. Please have a maintainer review it manually:',
+                    '',
+                    mentions,
+                    '',
+                    '在维护者处理前, 本检查将不再自动评论.',
+                    'This check will stay silent until a maintainer takes over.',
+                    '',
+                    NOTIFY_MARKER,
+                  ].join('\n'),
+                });
+              }
             }
 
             if (failed) {
