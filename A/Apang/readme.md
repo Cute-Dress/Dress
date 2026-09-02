@@ -29,25 +29,45 @@
 
 <details>
 <summary>点击展开~~</summary>
-<img src="./2026_1st.jpg" width="25%">
-<img src="./2026_2nd.jpg" width="25%">
-<img src="./2026_3rd.jpg" width="25%">
-<img src="./2026_4th.jpg" width="25%">
-<img src="./2026_5th.jpg" width="25%">
-<img src="./2026_6th.jpg" width="25%">
-<img src="./2026_7th.jpg" width="25%">
-<img src="./2026_8th.jpg" width="25%">
-<img src="./2026_9th.jpg" width="25%">
-<img src="./2026_10th.jpg" width="25%">
-<img src="./2026_11th.jpg" width="25%">
-<img src="./2026_12th.jpg" width="25%">
-<img src="./2026_13rd.jpg" width="25%">
-<img src="./2026_14th.jpg" width="25%">
-<img src="./2026_15th.jpg" width="25%">
-<img src="./2026_16th.jpg" width="25%">
+<img src="./2025/2026_1st.jpg" width="25%">
+<img src="./2025/2026_2nd.jpg" width="25%">
+<img src="./2025/2026_3rd.jpg" width="25%">
+<img src="./2025/2026_4th.jpg" width="25%">
+<img src="./2025/2026_5th.jpg" width="25%">
+<img src="./2025/2026_6th.jpg" width="25%">
+<img src="./2025/2026_7th.jpg" width="25%">
+<img src="./2025/2026_8th.jpg" width="25%">
+<img src="./2025/2026_9th.jpg" width="25%">
+<img src="./2025/2026_10th.jpg" width="25%">
+<img src="./2025/2026_11th.jpg" width="25%">
+<img src="./2025/2026_12th.jpg" width="25%">
+<img src="./2025/2026_13th.jpg" width="25%">
+<img src="./2025/2026_14th.jpg" width="25%">
+<img src="./2025/2026_15th.jpg" width="25%">
+<img src="./2025/2026_16th.jpg" width="25%">
 </details>
 やっぱかわいい服を着ると写真を撮りたくなるよね～<br>
 头发是真发捏
 
+---
 
 
+\[2026年9月2日]
+
+泥嚎~<br>
+
+这次买了一套长裙，有60cm长<br>
+我从以前开始一直都想试试长裙的，今天快递终于到了！<br>
+于是不及待取件拆箱~~<br>
+<img src="./2026/0902 (1).jpg" width="25%">
+<img src="./2026/0902 (2).jpg" width="25%">
+<img src="./2026/0902 (3).jpg" width="25%">
+<img src="./2026/0902 (4).jpg" width="25%">
+<img src="./2026/0902 (5).jpg" width="25%">
+<img src="./2026/0902 (6).jpg" width="25%"><br>
+超级美萌的有没有！<br>
+
+四月份的时候，我注册了一个域名，有十年长！<br>
+所以我把统计页面迁移到了这个地址：[https://blog.sadnano.top](https://blog.sadnano.top)
+
+‍
