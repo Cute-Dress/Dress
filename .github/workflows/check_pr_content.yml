@@ -1,0 +1,342 @@
+# Check PR Content
+#
+# 综合检查 PR 描述与变更内容.
+#
+# 检查 pr-type (PR body 中的 <!-- pr-type: xxx -->):
+#   - 缺省无标签 -> 当作 images
+#   - 所有类型   -> 自查清单须存在且全部勾选
+#   - images     -> 须有图片变更; 目录须符合 A-Z/#/昵称/
+#   - ci_wf      -> 变更须均在 .github/ 下
+#   - docs/others -> 仅清单检查
+#
+# 任一项不通过: 评论 + fail
+#   评论计数: 每条 check 失败评论带 <!-- check-pr-content --> marker
+#   计数达到 3 后不再发 check 评论, 改为 @ 维护者 (MAINTAINERS.yml) 通知, 带 <!-- maintainer-notify --> marker
+#   通知只发一次; 之后完全静默 (检查照跑, 不发任何评论)
+#   并发: concurrency 排队 (不 cancel); 同一 PR 的连续事件只保留最后一个完整运行,
+#         中间状态被跳过, 最终检查基于最新 body
+#
+# 脚本内重要常量:
+#   IMAGE_EXT        与 size/exif 对齐的图片后缀
+#   ACTIVE_STATUSES  只检查 added / modified / renamed / copied
+#   PR_TYPE_RE       解析 pr-type 标签
+#   ROOT_EXEMPTIONS  目录检查时跳过的仓库根文件
+#
+name: Check PR Content
+
+on:
+  pull_request_target:
+    # edited: 只改 body 时勾选清单要重跑, 但连续 edited 会并发刷评论;
+    # 由 concurrency 排队兜底 (只保留最后一个完整运行), 见下.
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  # 排队模式 (不 cancel): 连续 edited 只保留最后一次完整运行.
+  # 中间状态被跳过是特性; 最终检查保证基于最新 body.
+  group: pr-content-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  check-content:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR content
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const IMAGE_EXT = /\.(jpe?g|jfif|png|webp|tiff?|hei[cf]|avif|gif|bmp)$/i;
+            const ACTIVE_STATUSES = new Set(['added', 'modified', 'renamed', 'copied']);
+            const PR_TYPE_RE = /<!--\s*pr-type:\s*(\S+)\s*-->/;
+            const CHECKBOX_RE = /^\s*-\s*\[([ xX])\]\s*(.*)$/;
+            const ROOT_EXEMPTIONS = new Set([
+              '.gitattributes',
+              '.gitignore',
+              'CONTRIBUTING.md',
+              'EXIF.md',
+              'GUIDE.md',
+              'LICENSE',
+              'README.md',
+              'Q&A.md',
+            ]);
+
+            // 评论计数与维护者通知
+            const CHECK_COMMENT_MARKER = '<!-- check-pr-content -->';
+            const NOTIFY_MARKER = '<!-- maintainer-notify -->';
+            // 允许发 3 条 check 评论; 第 4 次失败起不再发 check 评论, 改为通知维护者
+            const MAX_CHECK_COMMENTS = 3;
+
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.setFailed('Missing pull_request payload.');
+              return;
+            }
+
+            const prNumber = pr.number;
+            const body = pr.body || '';
+            const typeMatch = body.match(PR_TYPE_RE);
+            const prTypeMissing = !typeMatch;
+            const prType = typeMatch ? typeMatch[1] : 'images';
+
+            async function listChangedFiles() {
+              const files = [];
+              let page = 1;
+              while (true) {
+                const compare = await github.rest.repos.compareCommitsWithBasehead({
+                  owner,
+                  repo,
+                  basehead: `${pr.base.sha}...${pr.head.sha}`,
+                  per_page: 100,
+                  page,
+                });
+                const pageFiles = compare.data.files || [];
+                if (pageFiles.length === 0) break;
+                files.push(...pageFiles);
+                if (pageFiles.length < 100) break;
+                page++;
+              }
+              return files;
+            }
+
+            function expectedBucket(folderName) {
+              const first = folderName.trim().charAt(0);
+              return /^[A-Za-z]$/.test(first) ? first.toUpperCase() : '#';
+            }
+
+            function checkFolderPlacement(changedFiles) {
+              const invalid = [];
+              for (const fileInfo of changedFiles) {
+                if (!ACTIVE_STATUSES.has(fileInfo.status)) continue;
+
+                const file = fileInfo.filename.replace(/\\/g, '/');
+                const parts = file.split('/').filter(Boolean);
+                if (parts[0] === '.github') continue;
+                if (parts.length === 1 && ROOT_EXEMPTIONS.has(parts[0])) continue;
+
+                if (parts.length < 3) {
+                  invalid.push(`- ${file}（文件应位于 A-Z/# 下的个人文件夹内）`);
+                  continue;
+                }
+
+                const actualBucket = parts[0];
+                const contributorFolder = parts[1];
+                const expected = expectedBucket(contributorFolder);
+                if (actualBucket !== expected) {
+                  invalid.push(`- ${file}（应位于 ${expected}/${contributorFolder}/...）`);
+                }
+              }
+              return invalid;
+            }
+
+            function scanChecklist(text) {
+              const unchecked = [];
+              let total = 0;
+              // GitHub PR body 使用 CRLF; 必须按 \r?\n 拆行, 否则行尾 \r 会导致匹配失败
+              for (const line of text.split(/\r?\n/)) {
+                const m = line.match(CHECKBOX_RE);
+                if (!m) continue;
+                total++;
+                if (m[1] === ' ') {
+                  const label = (m[2] || '').trim() || '(untitled item)';
+                  unchecked.push(`- ${label}`);
+                }
+              }
+              return { total, unchecked };
+            }
+
+            // 读取 .github/MAINTAINERS.yml 维护者名单
+            async function readMaintainers() {
+              try {
+                const { data } = await github.rest.repos.getContent({
+                  owner,
+                  repo,
+                  path: '.github/MAINTAINERS.yml',
+                });
+                const text = Buffer.from(data.content, 'base64').toString('utf-8');
+                const list = [];
+                for (const line of text.split(/\r?\n/)) {
+                  const m = line.match(/^\s*-\s+@?([A-Za-z0-9-]+)\s*$/);
+                  if (m) list.push(m[1]);
+                }
+                return list;
+              } catch (e) {
+                core.warning(`Cannot read MAINTAINERS.yml: ${e.message}`);
+                return [];
+              }
+            }
+
+            // 统计该 PR 上带指定 marker 的评论条数
+            async function countMarkedComments(marker) {
+              const comments = [];
+              let page = 1;
+              while (true) {
+                const resp = await github.rest.issues.listComments({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  per_page: 100,
+                  page,
+                });
+                comments.push(...resp.data);
+                if (resp.data.length < 100) break;
+                page++;
+              }
+              return comments.filter(c => c.body && c.body.includes(marker)).length;
+            }
+
+            const sections = [];
+            let failed = false;
+
+            // 1) 自查清单完整性 (所有 pr-type)
+            const { total: checklistTotal, unchecked } = scanChecklist(body);
+            if (checklistTotal === 0) {
+              failed = true;
+              sections.push([
+                '我们未在 PR 描述中找到自查清单, 请使用仓库提供的 Pull Request 模板, 勿删除清单项:',
+                'We could not find a checklist in the PR body. Please use the repository Pull Request template and do not remove the checklist items.',
+              ].join('\n'));
+            } else if (unchecked.length > 0) {
+              failed = true;
+              sections.push([
+                '我们注意到 PR 模板中的自查清单尚未全部勾选, 请确认并勾选后再次提交:',
+                'We noticed that the PR template checklist is incomplete. Please check all items and update the PR:',
+                '',
+                ...unchecked,
+              ].join('\n'));
+            }
+
+            const changedFiles = await listChangedFiles();
+
+            if (prType === 'images') {
+              const images = changedFiles.filter(file =>
+                ACTIVE_STATUSES.has(file.status) && IMAGE_EXT.test(file.filename)
+              );
+
+              // 2) Must have image changes
+              if (images.length === 0) {
+                failed = true;
+                if (prTypeMissing) {
+                  sections.push([
+                    'PR 描述中未找到 pr-type 标签, 已按图片提交 (images) 处理; 但未检测到任何图片文件变更.',
+                    'No pr-type tag was found in the PR body, so it was treated as an image submission (images); no changed image files were detected.',
+                    '',
+                    '若本次不是提交照片, 请关闭后改用正确的 PR 模板 (CI / 文档 / 其他).',
+                    'If this PR is not for photos, please close it and reopen with the correct template (CI / docs / others).',
+                    '',
+                    '若确为图片提交, 请将图片放入对应目录后再 push.',
+                    'If this is a photo submission, please add images under the proper folders and push again.',
+                  ].join('\n'));
+                } else {
+                  sections.push([
+                    '当前 PR 类型为图片提交 (pr-type: images), 但未检测到任何图片文件变更.',
+                    'This PR is typed as an image submission (pr-type: images), but no changed image files were detected.',
+                    '',
+                    '若本次不是提交照片, 请关闭后改用正确的 PR 模板 (CI / 文档 / 其他).',
+                    'If this PR is not for photos, please close it and reopen with the correct template (CI / docs / others).',
+                    '',
+                    '若确为图片提交, 请将图片放入对应目录后再 push.',
+                    'If this is a photo submission, please add images under the proper folders and push again.',
+                  ].join('\n'));
+                }
+              }
+
+              // 3) Folder placement
+              const invalidFolders = checkFolderPlacement(changedFiles);
+              if (invalidFolders.length > 0) {
+                failed = true;
+                sections.push([
+                  '我们注意到以下文件的目录归类不正确, 请调整路径后再次推送:',
+                  'We noticed that the following files are not under the correct A-Z/# folder. Please fix the paths and push again:',
+                  '',
+                  ...invalidFolders,
+                  '',
+                  '正确示例 / Examples:',
+                  '- M/moe/photo.jpg',
+                  '- #/233/photo.jpg',
+                ].join('\n'));
+              }
+            } else if (prType === 'ci_wf') {
+              // 4) CI changes must stay under .github/
+              const outside = changedFiles
+                .filter(file => ACTIVE_STATUSES.has(file.status))
+                .map(file => file.filename.replace(/\\/g, '/'))
+                .filter(file => !file.startsWith('.github/') && file !== '.github');
+
+              if (outside.length > 0) {
+                failed = true;
+                sections.push([
+                  '当前 PR 类型为 CI / 工作流修改 (pr-type: ci_wf), 但检测到 `.github/` 目录之外的文件变更:',
+                  'This PR is typed as a CI / workflow change (pr-type: ci_wf), but files outside `.github/` were changed:',
+                  '',
+                  ...outside.map(f => `- ${f}`),
+                  '',
+                  '请将非 CI 改动拆到其他 PR, 或改用对应模板 (图片 / 文档 / 其他).',
+                  'Please split non-CI changes into another PR, or switch to the matching template (images / docs / others).',
+                ].join('\n'));
+              }
+            } else if (prType === 'docs' || prType === 'others') {
+              core.info(`pr-type is "${prType}", only checklist rules apply.`);
+            } else {
+              failed = true;
+              sections.push([
+                `未识别的 pr-type: "${prType}". 请使用模板中的 images / ci_wf / docs / others.`,
+                `Unrecognized pr-type: "${prType}". Please use images / ci_wf / docs / others from the templates.`,
+              ].join('\n'));
+            }
+
+            if (sections.length > 0) {
+              const checkCount = await countMarkedComments(CHECK_COMMENT_MARKER);
+              const notified = await countMarkedComments(NOTIFY_MARKER);
+              core.info(`check comments: ${checkCount}/${MAX_CHECK_COMMENTS}, notified: ${notified > 0}`);
+
+              if (notified > 0) {
+                // 已通知过维护者: 完全静默, 检查照跑但不发任何评论
+                core.info('Maintainer already notified. Silent mode: no further comments.');
+              } else if (checkCount < MAX_CHECK_COMMENTS) {
+                // 仍有余量: 发一条带 marker 的 check 评论 (历史保留, 可复现)
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body: [
+                    sections.join('\n\n---\n\n'),
+                    '',
+                    CHECK_COMMENT_MARKER,
+                  ].join('\n'),
+                });
+              } else {
+                // 已达上限: 不再发 check 评论, 改为通知维护者 (只发一次)
+                const maintainers = await readMaintainers();
+                const mentions = maintainers.length
+                  ? maintainers.map(m => `@${m}`).join(' ')
+                  : '(MAINTAINERS.yml 中暂无维护者)';
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body: [
+                    '该 PR 已连续多次未通过内容检查, 请维护者人工处理:',
+                    'This PR has repeatedly failed the content check. Please have a maintainer review it manually:',
+                    '',
+                    mentions,
+                    '',
+                    '在维护者处理前, 本检查将不再自动评论.',
+                    'This check will stay silent until a maintainer takes over.',
+                    '',
+                    NOTIFY_MARKER,
+                  ].join('\n'),
+                });
+              }
+            }
+
+            if (failed) {
+              core.setFailed('PR content check failed.');
+            } else {
+              core.info('PR content check passed.');
+            }
