@@ -1,0 +1,264 @@
+# Auto-fix Image Files
+#
+# PR 评论 /auto-fix 触发 (仅维护者或 PR 作者).
+# 对变更图片: 去除全部 EXIF, 循环压缩至 <= 1 MiB, 再 push 回 PR 分支.
+# push 后由 check_file_size / check_exif 的 pull_request_target 自然重跑.
+#
+# 重要常量 / 行为:
+#   IMAGE_EXT   与 size/exif 对齐的图片后缀
+#   MAX_SIZE    1024 * 1024 (1 MiB)
+#   EXIF        exiftool -all= 全清 (与检查评论说明一致)
+#   压缩        循环降质/缩小直到 <= 1 MiB; 仍失败才 reset 且不 push
+#
+name: Auto-fix Image Files
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  auto-fix:
+    name: Auto-fix Images (EXIF & Size)
+    if: >
+      github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/auto-fix') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR' ||
+       github.event.comment.user.login == github.event.issue.user.login)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Acknowledge command and start processing
+        id: init
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: "rocket"
+            });
+            const response = await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: "自动修复工作中... (Auto-fix initiated! Processing images...)"
+            });
+            core.setOutput("comment_id", response.data.id);
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git identity and auth
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          gh auth setup-git
+
+      - name: Checkout PR branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr checkout ${{ github.event.issue.number }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl imagemagick jpegoptim optipng pngquant
+
+      - name: Get list of changed image files
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Snapshot HEAD before any local commits; used to fully revert on failure
+          echo "BASE_SHA=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+          gh pr diff ${{ github.event.issue.number }} --name-only \
+            | grep -iE '\.(jpe?g|jfif|png|webp|tiff?|hei[cf]|avif|gif|bmp)$' \
+            > "$RUNNER_TEMP/changed_images.txt" || true
+
+          if [ ! -s "$RUNNER_TEMP/changed_images.txt" ]; then
+            echo "No images changed in this PR."
+            exit 0
+          fi
+
+          echo "Changed images to process:"
+          cat "$RUNNER_TEMP/changed_images.txt"
+
+      - name: Process Phase 1 - Remove EXIF Data
+        run: |
+          if [ ! -s "$RUNNER_TEMP/changed_images.txt" ]; then exit 0; fi
+
+          exif_files_changed=0
+          while IFS= read -r file; do
+            if [ -f "$file" ]; then
+              count=$(exiftool -EXIF:all -S -q -- "$file" 2>/dev/null | wc -l || echo 0)
+              if [ "$count" -gt 0 ]; then
+                echo "Removing EXIF: $file"
+                exiftool -all= -overwrite_original "$file"
+                git add -- "$file"
+                exif_files_changed=1
+              fi
+            fi
+          done < "$RUNNER_TEMP/changed_images.txt"
+
+          if [ "$exif_files_changed" -eq 1 ]; then
+            git commit -m "chore: auto-remove EXIF data from images" || true
+          fi
+
+      - name: Process Phase 2 - Compress Oversized Images
+        id: compress
+        continue-on-error: true
+        run: |
+          if [ ! -s "$RUNNER_TEMP/changed_images.txt" ]; then exit 0; fi
+
+          size_files_changed=0
+          failed_files=()
+          MAX_SIZE=$((1024 * 1024))
+          MAX_ATTEMPTS=20
+
+          file_size() {
+            stat -c%s "$1" 2>/dev/null || stat -f%z "$1" 2>/dev/null || echo 0
+          }
+
+          while IFS= read -r file; do
+            if [ ! -f "$file" ]; then continue; fi
+
+            size=$(file_size "$file")
+            if [ "$size" -le "$MAX_SIZE" ]; then continue; fi
+
+            echo "Compressing: $file ($size bytes)"
+            ext_lower=$(echo "${file##*.}" | tr '[:upper:]' '[:lower:]')
+            attempt=0
+
+            while [ "$(file_size "$file")" -gt "$MAX_SIZE" ] && [ "$attempt" -lt "$MAX_ATTEMPTS" ]; do
+              attempt=$((attempt + 1))
+              echo "  attempt $attempt / $MAX_ATTEMPTS"
+
+              case "$ext_lower" in
+                jpg|jpeg|jfif)
+                  if [ "$attempt" -eq 1 ]; then
+                    jpegoptim --size=990k "$file" || true
+                  elif [ "$attempt" -le 8 ]; then
+                    # 75, 65, 55, ... down
+                    q=$((85 - attempt * 10))
+                    [ "$q" -lt 25 ] && q=25
+                    mogrify -quality "$q" "$file"
+                  else
+                    mogrify -resize 90% -quality 40 "$file"
+                  fi
+                  ;;
+                png)
+                  if [ "$attempt" -le 5 ]; then
+                    pngquant --quality=40-70 --ext .png --force "$file" || optipng -o2 "$file" || true
+                  else
+                    mogrify -resize 90% "$file"
+                  fi
+                  ;;
+                *)
+                  if [ "$attempt" -le 5 ]; then
+                    q=$((80 - attempt * 10))
+                    [ "$q" -lt 25 ] && q=25
+                    mogrify -quality "$q" "$file"
+                  else
+                    mogrify -resize 90% -quality 40 "$file"
+                  fi
+                  ;;
+              esac
+            done
+
+            new_size=$(file_size "$file")
+            if [ "$new_size" -gt "$MAX_SIZE" ]; then
+              echo "Failed to compress $file below 1 MiB (Current: $new_size bytes)"
+              failed_files+=("$file")
+            else
+              echo "OK: $file -> $new_size bytes"
+              git add -- "$file"
+              size_files_changed=1
+            fi
+          done < "$RUNNER_TEMP/changed_images.txt"
+
+          if [ ${#failed_files[@]} -gt 0 ]; then
+            echo "Some files failed to compress below 1 MiB after $MAX_ATTEMPTS attempts."
+            {
+              echo "failed=true"
+              echo "failed_list<<EOF"
+              for f in "${failed_files[@]}"; do echo "- $f"; done
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+
+            # Drop local commits / dirty tree so we never push a half-fixed state
+            git reset --hard "$BASE_SHA"
+            exit 1
+          fi
+
+          if [ "$size_files_changed" -eq 1 ]; then
+            git commit -m "chore: auto-compress oversized images" || true
+          fi
+
+      - name: Push Changes
+        id: push
+        if: steps.compress.outcome != 'failure'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! git diff --quiet @{u}...HEAD; then
+            echo "Pushing changes back to the PR branch..."
+            git push
+          else
+            echo "No changes made during processing."
+          fi
+
+      - name: Report Completion
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const compressOutcome = "${{ steps.compress.outcome }}";
+            const pushOutcome = "${{ steps.push.outcome }}";
+            const failedList = `${{ steps.compress.outputs.failed_list }}`;
+            const commentId = `${{ steps.init.outputs.comment_id }}`;
+
+            let message = "";
+            if (compressOutcome === 'failure' && failedList.trim().length > 0) {
+              message = `**自动修复未完全成功 (Auto-fix failed to compress some files).**
+
+            经多次压缩仍无法将以下文件压至 1 MiB 以内 (已回滚, 未推送):
+            (Still over 1 MiB after repeated compression; changes were reverted and not pushed:)
+
+            ${failedList}
+
+            **如何手动修复 (How to fix manually):**
+            请在本地缩小分辨率或改用更高压缩率格式后再次提交.
+            (Please scale down resolution or use a more efficient format, then push again.)`;
+            } else if (compressOutcome !== 'success' || pushOutcome !== 'success') {
+              message = "**自动修复失败 (Auto-fix failed).**\n请查看 [Actions Log](" + context.serverUrl + "/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + context.runId + ") 获取详情。(Please check the Actions Log for details.)";
+            } else {
+              message = "**自动修复成功 (Auto-fix completed successfully)!**\n已去除全部 EXIF (如有) 并压缩超限图片 (如有). push 后将由 size / EXIF 检查自动重跑.\n(All EXIF stripped if present; oversized images compressed if needed. size / EXIF checks will re-run after the push.)";
+            }
+
+            if (commentId && commentId !== "undefined" && commentId !== "") {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: parseInt(commentId, 10),
+                body: message
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: message
+              });
+            }

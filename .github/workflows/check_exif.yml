@@ -1,0 +1,192 @@
+# Check Image EXIF Data
+#
+# 仅在 PR 为图片提交时检查变更图片是否含高敏感 EXIF (GPS / 地址 / 联系方式).
+# 普通摄影参数 (光圈, 快门等) 不拦截.
+#
+# 检查 pr-type (PR body 中的 <!-- pr-type: xxx -->):
+#   - images (或缺省无标签) -> 执行检查
+#   - ci_wf / docs / others  -> 跳过, 不 fail
+# 无变更图片时跳过, 不 fail (无图提醒交给 check_pr_content)
+#
+# 脚本内重要常量:
+#   IMAGE_EXT        认定的图片后缀; 只检查这些文件
+#   ACTIVE_STATUSES  只检查 added / modified / renamed / copied
+#   PR_TYPE_RE       解析 pr-type 标签
+#   HIGH_SENS_ARGS   exiftool 高敏感字段列表
+#
+name: Check Image EXIF Data
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: exif-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  check-exif:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install exiftool
+        run: |
+          command -v exiftool && exit 0
+          sudo apt-get install -y --no-install-recommends libimage-exiftool-perl \
+            || (sudo apt-get update && sudo apt-get install -y --no-install-recommends libimage-exiftool-perl)
+
+      - name: Check EXIF in changed images
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { execSync } = require('child_process');
+            const fs = require('fs');
+            const path = require('path');
+            const os = require('os');
+
+            const IMAGE_EXT = /\.(jpe?g|jfif|png|webp|tiff?|hei[cf]|avif|gif|bmp)$/i;
+            const ACTIVE_STATUSES = new Set(['added', 'modified', 'renamed', 'copied']);
+            const PR_TYPE_RE = /<!--\s*pr-type:\s*(\S+)\s*-->/;
+            // GPS / IPTC address / XMP location & contact
+            const HIGH_SENS_ARGS = [
+              '-GPS:GPSLatitude', '-GPS:GPSLongitude', '-GPS:GPSAltitude',
+              '-GPS:GPSDateStamp', '-GPS:GPSTimeStamp',
+              '-GPS:GPSSpeed', '-GPS:GPSTrack', '-GPS:GPSImgDirection',
+              '-IPTC:City', '-IPTC:Country-PrimaryLocationName',
+              '-IPTC:Sub-location', '-IPTC:Province-State',
+              '-XMP-photoshop:City', '-XMP-photoshop:Country', '-XMP-photoshop:State',
+              '-XMP-iptcCore:CreatorWorkEmail', '-XMP-iptcCore:CreatorWorkTelephone',
+              '-XMP-iptcCore:CreatorCity', '-XMP-iptcCore:CreatorCountry',
+              '-XMP-iptcCore:CreatorPostalCode',
+            ];
+
+            const { owner, repo } = context.repo;
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.setFailed('Missing pull_request payload.');
+              return;
+            }
+
+            const prNumber = pr.number;
+            const typeMatch = (pr.body || '').match(PR_TYPE_RE);
+            const prType = typeMatch ? typeMatch[1] : 'images';
+
+            if (prType !== 'images') {
+              core.info(`pr-type is "${prType}", skip EXIF check.`);
+              return;
+            }
+
+            // compareCommitsWithBasehead (base...head), not pulls.listFiles:
+            // listFiles diffs against merge-base and can list hundreds of unrelated
+            // files when a fork is far behind (e.g. after "Update branch").
+            const changedImages = [];
+            let comparePage = 1;
+            while (true) {
+              const { data: cmp } = await github.rest.repos.compareCommitsWithBasehead({
+                owner,
+                repo,
+                basehead: `${pr.base.sha}...${pr.head.sha}`,
+                per_page: 100,
+                page: comparePage,
+              });
+              for (const f of (cmp.files || [])) {
+                if (ACTIVE_STATUSES.has(f.status) && IMAGE_EXT.test(f.filename)) {
+                  changedImages.push(f.filename);
+                }
+              }
+              if (!cmp.files || cmp.files.length < 100) break;
+              comparePage++;
+            }
+
+            if (changedImages.length === 0) {
+              core.info('No changed images found, skip EXIF check.');
+              return;
+            }
+            core.info(`Checking ${changedImages.length} image(s) for high-sensitivity EXIF.`);
+
+            const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'exif-'));
+            const exifFiles = [];
+
+            for (const file of changedImages) {
+              const tmpFile = path.join(tmp, file.replace(/[\\/]/g, '__'));
+              try {
+                // '#' must be percent-encoded or GitHub treats it as a URL fragment.
+                const apiPath = file.replace(/#/g, '%23');
+                const { data } = await github.rest.repos.getContent({
+                  owner: pr.head.repo.owner.login,
+                  repo: pr.head.repo.name,
+                  path: apiPath,
+                  ref: pr.head.sha,
+                });
+
+                let raw;
+                if (!Array.isArray(data) && data.content) {
+                  raw = Buffer.from(data.content, 'base64');
+                } else if (!Array.isArray(data) && data.download_url) {
+                  const resp = await fetch(data.download_url);
+                  if (!resp.ok) throw new Error(`Download ${resp.status}`);
+                  raw = Buffer.from(await resp.arrayBuffer());
+                } else {
+                  throw new Error('Cannot fetch file content');
+                }
+
+                fs.writeFileSync(tmpFile, raw);
+                const safeFile = tmpFile.replace(/'/g, "'\\\\'");
+                // Drop empty/undef/all-zero placeholders (e.g. GPS IFD with no coords).
+                const count = parseInt(execSync(
+                  `exiftool ${HIGH_SENS_ARGS.join(' ')} -S -q -- '${safeFile}' 2>/dev/null | grep -Ev ': *(undef|00:00:00)?$' | wc -l`,
+                  { encoding: 'utf-8', timeout: 10000 }
+                ).trim(), 10) || 0;
+
+                if (count > 0) {
+                  exifFiles.push(file);
+                  core.info(`Sensitive EXIF found: ${file} (${count} tags)`);
+                }
+              } catch (e) {
+                core.warning(`Skipping ${file}: ${e.message}`);
+              } finally {
+                try { fs.unlinkSync(tmpFile); } catch {}
+              }
+            }
+            try { fs.rmdirSync(tmp); } catch {}
+
+            if (exifFiles.length) {
+              const fileList = exifFiles.map(f => `- ${f}`).join('\n');
+              const body = [
+                '我们检测到以下文件包含**高敏感 EXIF 信息**(如 GPS 坐标, 地址或联系方式), 请移除后再次提交:',
+                'We detected **high-sensitivity EXIF data** (e.g. GPS coordinates, address, or contact fields) in the following files. Please remove them and resubmit:',
+                '',
+                fileList,
+                '',
+                '**仅高敏感字段 (GPS / 地址 / 联系方式) 需要移除, 普通摄影参数 (光圈, 快门等) 无需处理.**',
+                '**Only high-sensitivity fields (GPS / address / contact info) need to be removed. Regular photography parameters (aperture, shutter speed, etc.) are fine to keep.**',
+                '',
+                `[EXIF 说明 / EXIF Guide](https://github.com/${owner}/${repo}/blob/master/EXIF.md) · [CONTRIBUTING.md](https://github.com/${owner}/${repo}/blob/master/CONTRIBUTING.md)`,
+                '---',
+                '',
+                '温馨提示: 您可以直接使用 `/auto-fix` 命令来自动修复这些文件.',
+                'Warm reminder: You can use the `/auto-fix` command to automatically fix these files.',
+                '',
+                '该命令会将图片压缩到 1 MiB 内, 并且去除**所有的 EXIF**信息, 若您不希望文件被改动, 请自行处理后重新提交 PR',
+                'This command will compress images to under 1 MiB and strip all EXIF metadata.',
+                'If you do not want your files modified, please fix them yourself and push again.',
+              ].join('\n');
+
+              try {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  body,
+                });
+              } catch (e) {
+                core.warning(`Cannot comment: ${e.message}. Check repo Settings > Actions > Workflow permissions.`);
+              }
+              core.setFailed('High-sensitivity EXIF data detected.');
+            } else {
+              core.info('No high-sensitivity EXIF data found.');
+            }
