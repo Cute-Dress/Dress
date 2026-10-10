@@ -20,7 +20,3 @@
 ---
 
 个人简介：<https://tachy001.github.io/boke/>
-
-<p align="center">
-  <img src="tachy01.jpg" alt="tachy01" width="500">
-</p>
