@@ -18,10 +18,13 @@ jobs:
       pull-requests: write
 
     steps:
-    - uses: actions/stale@v5
+    - uses: actions/stale@v11
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-        stale-issue-message: '这个 issue 已许久未活跃，因此即将关闭'
-        stale-pr-message: '这个 PR 已许久未活跃，因此即将关闭'
+        # stale pr only
+        days-before-issue-stale: -1
+        days-before-issue-close: -1
+        stale-pr-message: '这个 PR 已许久未活跃，请在 7 天内回应，否则将被关闭。'
+        close-pr-message: '这个 PR 因长期未活跃已关闭，如需继续请重新打开。'
         stale-issue-label: 'no-issue-activity'
         stale-pr-label: 'no-pr-activity'
