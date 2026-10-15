@@ -1,102 +1,89 @@
+# Check File Size
+#
+# 仅在 PR 为图片提交时检查变更图片是否均 <= 1 MiB
+#
+# 检查 pr-type (PR body 中的 <!-- pr-type: xxx -->):
+#   - images (或缺省无标签) -> 执行检查
+#   - ci_wf / docs / others  -> 跳过, 不 fail
+# 无变更图片时跳过, 不 fail (无图提醒交给 check_pr_content)
+#
+# 脚本内重要常量:
+#   MAX_SIZE         1024 * 1024 (1 MiB)
+#   IMAGE_EXT        认定的图片后缀; 只对这些文件查大小
+#   ACTIVE_STATUSES  只检查 added / modified / renamed / copied
+#   PR_TYPE_RE       解析 pr-type 标签
+#
 name: Check File Size
-
-run-name: "PR #${{ github.event.pull_request.number || inputs.pr_number }} (${{ github.event.pull_request.head.sha || inputs.head_sha }})"
 
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: Pull request number
-        required: true
-        type: number
-      head_sha:
-        description: Expected pull request head SHA
-        required: true
-        type: string
 
 permissions:
   contents: read
   pull-requests: write
   issues: write
-  
+
 jobs:
   check-size:
     runs-on: ubuntu-latest
     steps:
       - name: Check file sizes
         uses: actions/github-script@v7
-        env:
-          PR_NUMBER: ${{ inputs.pr_number }}
-          EXPECTED_HEAD_SHA: ${{ inputs.head_sha }}
         with:
           script: |
-            const MAX_SIZE = 1024 * 1024; // 1 MB
-            const IMAGE_EXT = /\.(jpe?g|png|webp|tiff?|hei[cf]|avif|gif)$/i;
+            const MAX_SIZE = 1024 * 1024; // 1 MiB
+            const IMAGE_EXT = /\.(jpe?g|jfif|png|webp|tiff?|hei[cf]|avif|gif|bmp)$/i;
             const ACTIVE_STATUSES = new Set(['added', 'modified', 'renamed', 'copied']);
+            const PR_TYPE_RE = /<!--\s*pr-type:\s*(\S+)\s*-->/;
+
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            let pr = context.payload.pull_request;
-
+            const pr = context.payload.pull_request;
             if (!pr) {
-              const prNumber = Number(process.env.PR_NUMBER);
-              if (!Number.isInteger(prNumber) || !process.env.EXPECTED_HEAD_SHA) {
-                core.setFailed('Missing workflow dispatch inputs.');
-                return;
-              }
-
-              const { data } = await github.rest.pulls.get({
-                owner,
-                repo,
-                pull_number: prNumber,
-              });
-              pr = data;
-              if (pr.state !== 'open' || pr.head.sha !== process.env.EXPECTED_HEAD_SHA) {
-                core.setFailed('The pull request head no longer matches the requested commit.');
-                return;
-              }
+              core.setFailed('Missing pull_request payload.');
+              return;
             }
 
             const prNumber = pr.number;
+            const typeMatch = (pr.body || '').match(PR_TYPE_RE);
+            const prType = typeMatch ? typeMatch[1] : 'images';
 
-            let oversized = [];
-            let page = 1;
+            if (prType !== 'images') {
+              core.info(`pr-type is "${prType}", skip file size check.`);
+              return;
+            }
+
             let files = [];
-
+            let page = 1;
             while (true) {
               const compare = await github.rest.repos.compareCommitsWithBasehead({
                 owner,
                 repo,
                 basehead: `${pr.base.sha}...${pr.head.sha}`,
                 per_page: 100,
-                page
+                page,
               });
 
               const pageFiles = compare.data.files || [];
               if (pageFiles.length === 0) break;
 
               files.push(...pageFiles);
-
               if (pageFiles.length < 100) break;
               page++;
             }
 
-            const hasChangedImages = files.some(file =>
+            const images = files.filter(file =>
               ACTIVE_STATUSES.has(file.status) && IMAGE_EXT.test(file.filename)
             );
-            if (!hasChangedImages) {
-              core.setFailed('No changed images found.');
+            if (images.length === 0) {
+              core.info('No changed images found, skip file size check.');
               return;
             }
 
-            for (const file of files) {
+            const oversized = [];
+            for (const file of images) {
               try {
-                // 只检查新增或修改文件
-                if (!ACTIVE_STATUSES.has(file.status))
-                  continue;
-
-                // 先编码 %，再编码 # 和 ?，避免双重编码问题。
                 const encodedPath = file.filename
                   .replace(/%/g, '%25')
                   .replace(/#/g, '%23')
@@ -106,41 +93,43 @@ jobs:
                   owner: pr.head.repo.owner.login,
                   repo: pr.head.repo.name,
                   path: encodedPath,
-                  ref: pr.head.sha
+                  ref: pr.head.sha,
                 });
 
                 const size = content.data.size;
-
                 if (size > MAX_SIZE) {
                   oversized.push(`- ${file.filename} (${size} bytes)`);
                 }
               } catch (error) {
                 core.warning(`Skip file ${file.filename}: ${error.message}`);
-                continue;
               }
             }
 
             if (oversized.length > 0) {
-              const body = `
-            我们注意到以下文件的大小超过了 1MB, 请在压缩后再次提交 Pull Request:
-            We have noted that the following files exceed 1MB in size. Please resubmit your pull request after compressing them:
-
-            ${oversized.join("\n")}
-            
-            ---
-            
-            <small>温馨提示: 您可以直接使用 \`/auto-fix\` 命令来自动修复这些文件。</small>
-            <small>Warm reminder: You can use the \`/auto-fix\` command to automatically fix these files.</small>
-              `.trim();
+              const body = [
+                '我们注意到以下文件的大小超过了 1 MiB, 请在压缩后再次提交 Pull Request:',
+                'We have noted that the following files exceed 1 MiB in size. Please resubmit your pull request after compressing them:',
+                '',
+                ...oversized,
+                '',
+                '---',
+                '',
+                '温馨提示: 您可以直接使用 `/auto-fix` 命令来自动修复这些文件。',
+                'Warm reminder: You can use the `/auto-fix` command to automatically fix these files.',
+                '',
+                '该命令会将图片压缩到 1 MiB 内, 并且去除**所有的 EXIF**信息, 若您不希望文件被改动, 请自行处理后重新提交 PR',
+                'This command will compress images to under 1 MiB and strip all EXIF metadata.',
+                'If you do not want your files modified, please fix them yourself and push again.',
+              ].join('\n');
 
               await github.rest.issues.createComment({
                 owner,
                 repo,
                 issue_number: prNumber,
-                body
+                body,
               });
 
-              core.setFailed("File size check failed");
+              core.setFailed('File size check failed');
             } else {
-              core.info("All changed files are under 1 MB.");
+              core.info('All changed images are under 1 MiB.');
             }
