@@ -35,5 +35,9 @@ jobs:
         # This check is merely for skipping it silently.
         uses: sequoia-pgp/fast-forward@v1
         with:
+          # GITHUB_TOKEN cannot update files under .github/workflows.
+          # Configure FAST_FORWARD_TOKEN with Contents and Workflows write access
+          # to fast-forward PRs that add or modify workflow files.
+          github_token: ${{ secrets.FAST_FORWARD_TOKEN || github.token }}
           merge: true
           comment: on-error
