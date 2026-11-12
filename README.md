@@ -1,6 +1,6 @@
 ## Dress - 面向可爱的蓝孩子 (/ω＼) 的 git 学习实践项目 on GitHub
 
-[English](en-US/README.md)
+[English](en-US/README.md) • [日本語](ja-JP/README.md)
 
 > ***如果您对项目感到困惑或觉得奇怪，请阅读 [Q&A](Q&A.md)***
 
