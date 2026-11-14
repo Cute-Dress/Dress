@@ -5,13 +5,13 @@
 **EXIF**（Exchangeable Image File Format）は、画像ファイルに埋め込まれた「デジタルな履歴書」のようなものです。  
 スマホやカメラで写真を撮るたびに、撮影時のさまざまな情報が自動で記録されます。たとえば、**どこで撮ったか**、**どの機材で撮ったか**、**いつ撮ったか**などです。
 
-EXIF だけでなく、画像には **IPTC** や **XMP** などのメタデータ形式が含まれていることもあり、これらも位置情報や個人情報を保存できます。
+EXIF だけでなく、画像には **IPTC** や **XMP** などのメタデータ形式が含まれていることもあり、これらにも位置情報や個人情報が保存されます。
 
 写真提出のガイドラインと一般的なメタデータ削除方法は [コントリビューションの準備](CONTRIBUTING.md) をご覧ください。
 
 ---
 
-## 🔴 高感度
+## 🔴 センシティブ
 
 **これらのフィールドは本プロジェクトのワークフローで自動検出され、見つかった場合は修正が必要です。**
 
@@ -22,14 +22,14 @@ EXIF だけでなく、画像には **IPTC** や **XMP** などのメタデー�
 | `GPS:GPSDateStamp` + `GPS:GPSTimeStamp` | 正確な撮影時刻（座標と組み合わせると行動履歴を復元可能） |
 | `GPS:GPSSpeed` / `GPS:GPSTrack` / `GPS:GPSImgDirection` | 移動速度、方向 |
 | `IPTC:City` / `IPTC:Country` / `IPTC:Sub-location` / `IPTC:Province-State` | テキスト形式の撮影住所 |
-| `XMP-photoshop:City` / `XMP-photoshop:Country` / `XMP-photoshop:State` | Photoshop/Lightroom が書き込む住所 |
-| `XMP-iptcCore:CreatorWorkEmail` | Creator's work email |
+| `XMP-photoshop:City` / `XMP-photoshop:Country` / `XMP-photoshop:State` | Photoshop/Lightroom が書き込んだアドレス |
+| `XMP-iptcCore:CreatorWorkEmail` | 作成者の仕事用メール |
 | `XMP-iptcCore:CreatorWorkTelephone` | 制作者の電話番号 |
 | `XMP-iptcCore:CreatorCity` / `CreatorCountry` / `CreatorPostalCode` | 制作者の連絡先住所 |
 
 ---
 
-## 🟠 やや敏感
+## 🟠 ややセンシティブ
 
 **これらのフィールドは PR の拒否にはなりませんが、注意しておきましょう。特にシリアル番号系の情報は、複数の画像から同一機材を追跡できることがあります。**
 
@@ -42,7 +42,7 @@ EXIF だけでなく、画像には **IPTC** や **XMP** などのメタデー�
 
 ---
 
-## 🟡 低感度
+## 🟡 一般的
 
 **通常はプライバシーへの影響が小さく、本プロジェクトではブロックしません。これらの情報が残っていても問題ありません。**
 
@@ -58,7 +58,7 @@ EXIF だけでなく、画像には **IPTC** や **XMP** などのメタデー�
 
 ## 🔍 セルフチェックの方法
 
-提出前に、以下のコマンドで画像に高感度情報が残っていないか確認できます：
+提出前に、以下のコマンドで画像にセンシティブな情報が残っていないか確認できます：
 
 ```bash
 # exiftool をインストール
@@ -70,7 +70,7 @@ EXIF だけでなく、画像には **IPTC** や **XMP** などのメタデー�
 exiftool -GPS:all -IPTC:City -IPTC:Country-PrimaryLocationName \
   -XMP-photoshop:City -XMP-iptcCore:CreatorWorkEmail your_photo.jpg
 
-# 上記コマンドで何も出力されなければ、高感度フィールドはすべて削除済みです。
+# 上記コマンドで何も出力されなければ、センシティブなフィールドはすべて削除済みということです。
 ```
 
 ### すべてのメタデータを完全に削除

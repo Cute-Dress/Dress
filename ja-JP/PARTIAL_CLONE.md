@@ -9,20 +9,20 @@ Dress リポジトリには大量の画像が含まれています。`--depth 1`
 まず GitHub 上で本リポジトリを Fork し、自分の Fork をクローンします。コマンド内のユーザー名とディレクトリは実際の値に置き換えてください：
 
 ```bash
-git clone --filter=blob:none --sparse --depth 1 https://github.com/<あなたのユーザー名>/Dress.git
+git clone --filter=blob:none --sparse --depth 1 https://github.com/<ユーザー名>/Dress.git
 cd Dress
 
 # 自分のディレクトリだけをチェックアウト。リモートにまだそのディレクトリがなくても、先に設定できる
-git sparse-checkout set '<頭文字>/<あなたのフォルダ名>'
+git sparse-checkout set '<頭文字>/<フォルダ名>'
 ```
 
-たとえば `Y/Yueosa` を使う場合：
+たとえば `N/Nano` を使う場合：
 
 ```bash
-git sparse-checkout set 'Y/Yueosa'
+git sparse-checkout set 'N/Nano'
 ```
 
-このときワークスペースにはルートディレクトリのドキュメントと `Y/Yueosa` が含まれ、他のコントリビューターの画像は表示されません。フォルダ名が数字や記号で始まる場合は `#` ディレクトリを使い、パスを必ず引用符で囲んでください：
+このときワークスペースにはルートディレクトリのドキュメントと `N/Nano` が含まれ、他のコントリビューターの画像は表示されません。フォルダ名が数字や記号で始まる場合は `#` ディレクトリを使い、パスを必ず引用符で囲んでください：
 
 ```bash
 git sparse-checkout set '#/233'
