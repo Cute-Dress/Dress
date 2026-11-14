@@ -1,4 +1,4 @@
-## Dress — GitHub での可愛いおとこのこ (/ω＼) 向けのGit学習・実践プロジェクト
+## Dress — 可愛いおとこのこ (/ω＼) 向けのGit学習・実践プロジェクト
 
 [English](../en-US/README.md) • [简体中文](../README.md)
 
@@ -8,7 +8,7 @@
 ![GitHub repo size in bytes](https://img.shields.io/github/repo-size/Cute-Dress/Dress.svg)
 [![License](https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png)](http://creativecommons.org/licenses/by-nc-sa/4.0/)  
 
-このプロジェクトは簡単で、コードのコントリビューションは必ずしも必要ではありません。プログラミングスキルがなくても構いません。ここでは、リポジトリのクローンから、ブランチの作成、変更内容のコミットと同期、PRの作成とマージまで、一連の流れを一度に体験して、Git/GitHubの使い方を一通り身につけることができます。
+このプロジェクトは簡単で、コードのコントリビューションは必ずしも必要ではありません。プログラミングスキルがなくても構いません。ここでは、リポジトリのクローンから、ブランチの作成、変更内容のコミットと同期、PRの作成まで、一連の流れを一度に体験して、Git/GitHubの使い方を一通り身につけることができます。
 
 **もちろん、自分の女装写真を少なくとも一枚用意しておいてね**
 
@@ -37,7 +37,7 @@
 
 - [API](https://dress.iszako.top/)
 
-- [レガシーの Dress プロジェクト](https://drsrel.github.io/)
+- [旧 Dress プロジェクト](https://drsrel.github.io/)
 
 ### コントリビューターさんたち
 

@@ -2,12 +2,12 @@
 
 ## 概要
 
-**EXIF**（Exchangeable Image File Format）は、画像ファイルに埋め込まれた「デジタルな履歴書」のようなものです。  
-スマホやカメラで写真を撮るたびに、撮影時のさまざまな情報が自動で記録されます。たとえば、**どこで撮ったか**、**どの機材で撮ったか**、**いつ撮ったか**などです。
+**EXIF**（Exchangeable Image File Format）は、写真ファイルの中に自動で埋め込まれる「撮影情報のメモ」のことです。  
+スマホやデジカメで撮った写真には、見た目には分からない形で、**どこで撮ったか**、**どの機材で撮ったか**、**いつ撮ったか**などの情報が一緒に保存されています。
 
-EXIF だけでなく、画像には **IPTC** や **XMP** などのメタデータ形式が含まれていることもあり、これらにも位置情報や個人情報が保存されます。
+EXIF だけでなく、写真には **IPTC** や **XMP** などのメタデータ形式が含まれていることもあり、これらにも位置情報や個人情報が保存されます。
 
-写真提出のガイドラインと一般的なメタデータ削除方法は [コントリビューションの準備](CONTRIBUTING.md) をご覧ください。
+写真提出のガイドラインと一般的なメタデータ削除方法については [コントリビューションの準備](CONTRIBUTING.md) をご覧ください。
 
 ---
 
@@ -24,8 +24,8 @@ EXIF だけでなく、画像には **IPTC** や **XMP** などのメタデー�
 | `IPTC:City` / `IPTC:Country` / `IPTC:Sub-location` / `IPTC:Province-State` | テキスト形式の撮影住所 |
 | `XMP-photoshop:City` / `XMP-photoshop:Country` / `XMP-photoshop:State` | Photoshop/Lightroom が書き込んだアドレス |
 | `XMP-iptcCore:CreatorWorkEmail` | 作成者の仕事用メール |
-| `XMP-iptcCore:CreatorWorkTelephone` | 制作者の電話番号 |
-| `XMP-iptcCore:CreatorCity` / `CreatorCountry` / `CreatorPostalCode` | 制作者の連絡先住所 |
+| `XMP-iptcCore:CreatorWorkTelephone` | 作成者の電話番号 |
+| `XMP-iptcCore:CreatorCity` / `CreatorCountry` / `CreatorPostalCode` | 作成者の連絡先住所 |
 
 ---
 
@@ -37,7 +37,7 @@ EXIF だけでなく、画像には **IPTC** や **XMP** などのメタデー�
 |---|---|
 | `EXIF:BodySerialNumber` / `EXIF:CameraSerialNumber` | 機材のシリアル番号。複数画像から追跡可能 |
 | `EXIF:LensSerialNumber` | レンズのシリアル番号 |
-| `EXIF:Artist` / `XMP-dc:Creator` | 撮影者・制作者の名前 |
+| `EXIF:Artist` / `XMP-dc:Creator` | 撮影者・作成者の名前 |
 | `MakerNotes:FaceName` / `XMP-mwg-rs:PersonInImageName` | カメラの顔認識で紐付けられた人名 |
 
 ---

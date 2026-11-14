@@ -12,7 +12,7 @@ Fork → 写真をアップロード → Commit → PR を作成 → マージ�
 
 ---
 
-## まず：Fork する
+## ステップ1：Fork する
 
 > **Fork** というのは 他人のリポジトリを自分の GitHub アカウントに「丸ごとコピー」して、自由に変更できるようにするものですよ。元のプロジェクトには影響しないにゃん！
 
@@ -87,7 +87,7 @@ git push origin main
 1. Fork したリポジトリのページに戻る
 2. **"This branch is X commits ahead"** という表示が出るので、**Contribute** → **Open pull request** をクリック
 3. デフォルトで **写真提出** テンプレートになっている。CI / ドキュメント / その他の変更の場合は、テンプレート下部のリンクから切り替える
-4. テンプレート内のセルフチェック項目を**すべて**チェックする。テンプレート上部の pr-type マークとチェックリストは削除しないでください
+4. テンプレート内のセルフチェック項目を**すべて**チェックする。テンプレート上部の `pr-type` マークとチェックリストは削除しないでください
 5. **Create pull request** をクリック
 
 ---
@@ -113,11 +113,11 @@ PR を送信すると、自動で以下がチェックされます：
 ## ⚠️ 提出前の注意
 
 1. **写真を圧縮すること** — 各写真を 1MB 以内にしてください。[TinyPNG](https://tinypng.com/) などのオンラインツールで圧縮できます。
-2. **センシティブな EXIF 情報を削除すること** — 最も重要なのは **GPS 座標** の削除です。撮影場所が正確に分かってしまいます。写真には住所や連絡先などの情報が含まれることもあります。詳しくは [EXIF](EXIF.md) と [コントリビューションの準備](CONTRIBUTING.md) での削除方法 を参照してください。
+2. **センシティブな EXIF 情報を削除すること** — 最も重要なのは **GPS 座標**の削除です。撮影場所が正確に分かってしまいます。写真には住所や連絡先などの情報が含まれることもあります。詳しくは [EXIF](EXIF.md) と [コントリビューションの準備](CONTRIBUTING.md) での削除方法をご覧ください。
 3. **フォルダ名を正しく付けること** — 意味のあるフォルダ名（GitHub ID と一致している必要はない）を使い、先頭文字に対応する A-Z/# ディレクトリに置いてください。
 4. **オリジナル写真だけアップロードすること** — 自分の写真だけを提出してください。盗用写真は受け付けません。
 5. **自分のフォルダだけを変更すること** — 他人のフォルダや他のプロジェクトファイルは変更しないでください。メンテナーに不要な手間をかけないようにしましょう。
-6. **ファイル名に漢字、仮名やスペースを避けること** — ファイル名に漢字、仮名やスペースがあると、一部のシステムで正しく表示・ダウンロードできない場合があります。英数字とハイフンだけを使ってください。
+6. **ファイル名には漢字、仮名、スペースを使わないこと** — ファイル名に漢字、仮名やスペースがあると、一部のシステムで正しく表示・ダウンロードできない場合があります。英数字とハイフンだけを使ってください。
 
 ---
 
@@ -204,13 +204,13 @@ flowchart TD
 
 | ワークフロー | ファイル | トリガー方式 | 動作 | 権限 |
 | --- | --- | --- | --- | --- |
-| Greetings | `greetings.yml` | `pull_request_target` | 初めてPRを出す方に歓迎コメント | `issues / pull-requests: write` |
-| Check PR Content | `check_pr_content.yml` | `pull request target (opened / synchronize / reopened / edited)` | すべてのタイプの PR でセルフチェックリストのチェックが必須。`images` は写真変更があり、ディレクトリが `A-Z/#/ニックネーム/` 構造に従うこと。`ci_wf` の変更はすべて `.github/` 内であること。未知の `pr-type` はエラー | `contents: read, issues / pull-requests: write` |
-| Check File Size | `check_file_size.yml` | `pull request target (opened / synchronize / reopened)` | `images` タイプの PR のみ：変更写真がすべて ≤ 1 MiB であること。超過時はファイルをコメントで列挙し `/auto-fix` を案内、チェック失敗 | `contents: read, issues / pull-requests: write` |
-| Check Image EXIF Data | `check_exif.yml` | `pull request target (opened / synchronize / reopened, 同一 PR の同時実行はキャンセル)` | `images` タイプの PR のみ：変更写真をダウンロードし、`exiftool` で GPS・住所・連絡先などのセンシティブな EXIF をチェック。通常の撮影パラメータはブロックしない。該当時はコメントして `/auto-fix` を案内 | `contents: read, issues / pull-requests: write` |
+| Greetings | `greetings.yml` | `pull_request_target` | 初めて PR を出す方に歓迎コメント | `issues / pull-requests: write` |
+| Check PR Content | `check_pr_content.yml` | `pull_request_target (opened / synchronize / reopened / edited)` | すべてのタイプの PR でセルフチェックリストのチェックが必須。`images` は写真変更があり、ディレクトリが `A-Z/#/ニックネーム/` 構造に従うこと。`ci_wf` の変更はすべて `.github/` 内であること。未知の `pr-type` はエラー | `contents: read, issues / pull-requests: write` |
+| Check File Size | `check_file_size.yml` | `pull_request_target (opened / synchronize / reopened)` | `images` タイプの PR のみ：変更写真がすべて ≤ 1 MiB であること。超過時はファイルをコメントで列挙し `/auto-fix` を案内、チェック失敗 | `contents: read, issues / pull-requests: write` |
+| Check Image EXIF Data | `check_exif.yml` | `pull_request_target (opened / synchronize / reopened, 同一 PR の同時実行はキャンセル)` | `images` タイプの PR のみ：変更写真をダウンロードし、`exiftool` で GPS・住所・連絡先などのセンシティブな EXIF をチェック。通常の撮影パラメータはブロックしない。該当時はコメントして `/auto-fix` を案内 | `contents: read, issues / pull-requests: write` |
 | Auto-fix Image Files | `auto_fix.yml` | `issue_comment`（コメントが `/auto-fix` で始まり、メンテナーまたは PR 作者） | PR ブランチをチェックアウト → `exiftool` で全 EXIF を削除 → ループ圧縮（`jpegoptim / pngquant / optipng / ImageMagick`、最大 20 回）で ≤ 1 MiB まで → PR ブランチに push してチェック再実行。圧縮失敗時は全体をロールバックして push せず、コメントで説明 | `contents / pull-requests / issues: write` |
 | Fast-forward for PR | `fast-forward.yml` | `issue_comment / pull_request_review_comment`（コメントに `/fast-forward` を含む） | コメント者の `write` 権限を検証後、ファストフォワードマージを実行（GitHub のマージで GPG 署名が上書きされるのを回避）。`.github/workflows/` を変更した PR のマージには `FAST_FORWARD_TOKEN` が必要 | `contents / pull-requests: write` |
 | Mark Stale Issues and PRs | `stale.yml` | `schedule (cron: 00 11 * * *)` | PR のみ対象：長期間活動がない場合に `no-pr-activity` をマークし 7 日以内の応答を促し、応答がなければクローズ（issue は対象外） | `issues / pull-requests: write` |
 
 
-*説明：pr-type は PR 本文中の `<!-- pr-type: xxx -->` タグで識別し、値は `images / ci_wf / docs / others`。省略時は `images` として扱います。*
+*説明：`pr-type` は PR 本文中の `<!-- pr-type: xxx -->` タグで識別し、値は `images / ci_wf / docs / others`。省略時は `images` として扱います。*
