@@ -352,7 +352,9 @@ jobs:
             } else {
               const recheckNote = recheckOutcome === 'success'
                 ? "\n已重新触发 size / EXIF 检查。(size / EXIF checks have been re-dispatched.)"
-                : "\n图片已修复并推送, 但检查重跑触发失败, 请手动重跑 size / EXIF 检查。(Changes were pushed, but re-dispatching the size / EXIF checks failed; please re-run them manually.)";
+                : recheckOutcome === 'skipped'
+                  ? "\n本次无文件改动, 未触发检查重跑。(No changes were needed, so the checks were not re-dispatched.)"
+                  : "\n图片已修复并推送, 但检查重跑触发失败, 请手动重跑 size / EXIF 检查。(Changes were pushed, but re-dispatching the size / EXIF checks failed; please re-run them manually.)";
               message = "**自动修复成功 (Auto-fix completed successfully)!**\n已去除全部 EXIF (如有) 并压缩超限图片 (如有)." + recheckNote;
             }
 
