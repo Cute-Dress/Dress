@@ -21,6 +21,7 @@ on:
     types: [created]
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
   issues: write
@@ -276,6 +277,38 @@ jobs:
           esac
           exit "$rc"
 
+      # GITHUB_TOKEN 触发的 push 不会产生 synchronize 事件 (GitHub 的事件抑制规则),
+      # 所以 size / EXIF 检查不会像评论里说的那样自动重跑。
+      # workflow_dispatch 是该规则唯一的例外, 因此这里显式补跑两个检查。
+      - name: Re-run image checks
+        id: recheck
+        if: steps.push.outputs.reason == 'pushed'
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          head_sha=$(git rev-parse HEAD)
+
+          # 等 PR head 指向刚推送的提交, 否则检查侧的一致性校验会失败
+          for _ in $(seq 1 20); do
+            current=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .head.sha)
+            [ "$current" = "$head_sha" ] && break
+            echo "waiting for PR head: expected $head_sha, current $current"
+            sleep 3
+          done
+          if [ "$current" != "$head_sha" ]; then
+            echo "::warning::PR head is $current, dispatching with $head_sha anyway"
+          fi
+
+          gh workflow run check_file_size.yml \
+            --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
+            -f pr_number="$PR_NUMBER" -f head_sha="$head_sha"
+          gh workflow run check_exif.yml \
+            --repo "$GITHUB_REPOSITORY" --ref "$DEFAULT_BRANCH" \
+            -f pr_number="$PR_NUMBER" -f head_sha="$head_sha"
+
       - name: Report Completion
         if: always()
         uses: actions/github-script@v7
@@ -284,6 +317,7 @@ jobs:
             const compressOutcome = "${{ steps.compress.outcome }}";
             const pushOutcome = "${{ steps.push.outcome }}";
             const pushReason = "${{ steps.push.outputs.reason }}";
+            const recheckOutcome = "${{ steps.recheck.outcome }}";
             const failedList = `${{ steps.compress.outputs.failed_list }}`;
             const commentId = `${{ steps.init.outputs.comment_id }}`;
 
@@ -316,7 +350,10 @@ jobs:
             } else if (compressOutcome !== 'success' || pushOutcome !== 'success') {
               message = "**自动修复失败 (Auto-fix failed).**\n请查看 [Actions Log](" + context.serverUrl + "/" + context.repo.owner + "/" + context.repo.repo + "/actions/runs/" + context.runId + ") 获取详情。(Please check the Actions Log for details.)";
             } else {
-              message = "**自动修复成功 (Auto-fix completed successfully)!**\n已去除全部 EXIF (如有) 并压缩超限图片 (如有). push 后将由 size / EXIF 检查自动重跑.\n(All EXIF stripped if present; oversized images compressed if needed. size / EXIF checks will re-run after the push.)";
+              const recheckNote = recheckOutcome === 'success'
+                ? "\n已重新触发 size / EXIF 检查。(size / EXIF checks have been re-dispatched.)"
+                : "\n图片已修复并推送, 但检查重跑触发失败, 请手动重跑 size / EXIF 检查。(Changes were pushed, but re-dispatching the size / EXIF checks failed; please re-run them manually.)";
+              message = "**自动修复成功 (Auto-fix completed successfully)!**\n已去除全部 EXIF (如有) 并压缩超限图片 (如有)." + recheckNote;
             }
 
             if (commentId && commentId !== "undefined" && commentId !== "") {

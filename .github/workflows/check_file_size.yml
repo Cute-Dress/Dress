@@ -15,9 +15,23 @@
 #
 name: Check File Size
 
+run-name: "Check File Size · PR #${{ inputs.pr_number || github.event.pull_request.number }}"
+
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
+  # auto-fix 用 GITHUB_TOKEN push 后不会产生 synchronize 事件,
+  # 由 auto_fix.yml 的 "Re-run image checks" 步骤通过 workflow_dispatch 补跑.
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number
+        required: true
+        type: number
+      head_sha:
+        description: Expected pull request head SHA
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -39,10 +53,21 @@ jobs:
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const pr = context.payload.pull_request;
+            let pr = context.payload.pull_request;
             if (!pr) {
-              core.setFailed('Missing pull_request payload.');
-              return;
+              // workflow_dispatch: 由 auto-fix 在推送后补跑
+              const dispatchedPr = Number('${{ inputs.pr_number }}');
+              const expectedHead = '${{ inputs.head_sha }}';
+              if (!Number.isInteger(dispatchedPr) || dispatchedPr <= 0 || !expectedHead) {
+                core.setFailed('Missing workflow_dispatch inputs (pr_number, head_sha).');
+                return;
+              }
+              const { data } = await github.rest.pulls.get({ owner, repo, pull_number: dispatchedPr });
+              if (data.state !== 'open' || data.head.sha !== expectedHead) {
+                core.setFailed(`PR #${dispatchedPr} head no longer matches ${expectedHead}.`);
+                return;
+              }
+              pr = data;
             }
 
             const prNumber = pr.number;
