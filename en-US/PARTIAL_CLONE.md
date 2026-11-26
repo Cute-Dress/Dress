@@ -1,7 +1,5 @@
 # Partial Clone Guide
 
-[Chinese](../PARTIAL_CLONE.md)
-
 The Dress repository contains many images. Using `--depth 1` omits older commits, but it still downloads every image in the current revision. If you only plan to modify your own directory, use a partial clone with sparse checkout. Git will initially download the commit and directory structure, then fetch file contents only for directories you check out.
 
 > Git 2.25 or later is required. Run `git --version` to check your version.
