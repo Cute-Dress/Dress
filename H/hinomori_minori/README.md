@@ -36,7 +36,7 @@ Matrix: @hinomori_minori:hinomori-minori.com
 - [小豆泽心羽](https://pjsekai.sega.jp/character/unite03/kohane/index.html)  
 ![card466](https://git.hinomori-minori.com/hinomori_minori/myinfo/raw/branch/main/images/466.png)
 - [天马咲希](https://pjsekai.sega.jp/character/unite01/saki/index.html)  
-![card1022](images/1022.png)
+![card1022](https://git.hinomori-minori.com/hinomori_minori/myinfo/raw/branch/main/images/1022.png)
 - [冰川纱夜](https://mzh.moegirl.org.cn/%E5%86%B0%E5%B7%9D%E7%BA%B1%E5%A4%9C)
 - [岛村抱月](https://mzh.moegirl.org.cn/%E5%B2%9B%E6%9D%91%E6%8A%B1%E6%9C%88)
 - [千早爱音](https://mzh.moegirl.org.cn/%E5%8D%83%E6%97%A9%E7%88%B1%E9%9F%B3)
